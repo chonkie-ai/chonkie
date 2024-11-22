@@ -443,7 +443,7 @@ This version of `SemanticChunker` has some optimizations that speed it up consid
 from chonkie import SemanticChunker
 
 chunker = SemanticChunker(
-    embedding_model="all-minilm-l6-v2",
+    embedding_model="sentence-transformers/all-MiniLM-L6-v2",
     chunk_size=512,
     similarity_threshold=0.7
 )
@@ -494,7 +494,7 @@ the `SDPMChunker` groups content via the semantic double-pass merging method, wh
 from chonkie import SDPMChunker
 
 chunker = SDPMChunker(
-    embedding_model="all-minilm-l6-v2",
+    embedding_model="sentence-transformers/all-MiniLM-L6-v2",
     chunk_size=512,
     similarity_threshold=0.7,
     skip_window=1
