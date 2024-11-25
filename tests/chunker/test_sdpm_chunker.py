@@ -14,9 +14,10 @@ def sample_text():
 def embedding_model():
     return SentenceTransformerEmbeddings("all-MiniLM-L6-v2")
 
+
 @pytest.fixture
 def sample_complex_markdown_text():
-    text =  """# Heading 1
+    text = """# Heading 1
     This is a paragraph with some **bold text** and _italic text_. 
     ## Heading 2
     - Bullet point 1
@@ -59,6 +60,25 @@ def test_spdm_chunker_chunking(embedding_model, sample_text):
         similarity_threshold=0.5,
     )
     chunks = chunker.chunk(sample_text)
+
+    assert len(chunks) > 0
+    assert isinstance(chunks[0], SemanticChunk)
+    assert all([chunk.token_count <= 512 for chunk in chunks])
+    assert all([chunk.token_count > 0 for chunk in chunks])
+    assert all([chunk.text is not None for chunk in chunks])
+    assert all([chunk.start_index is not None for chunk in chunks])
+    assert all([chunk.end_index is not None for chunk in chunks])
+    assert all([chunk.sentences is not None for chunk in chunks])
+
+
+def test_spdm_chunker_percentile_mode(embedding_model, sample_complex_markdown_text):
+    """Test the SPDMChunker works with percentile-based similarity."""
+    chunker = SDPMChunker(
+        embedding_model=embedding_model,
+        chunk_size=512,
+        similarity_percentile=50,
+    )
+    chunks = chunker.chunk(sample_complex_markdown_text)
 
     assert len(chunks) > 0
     assert isinstance(chunks[0], SemanticChunk)

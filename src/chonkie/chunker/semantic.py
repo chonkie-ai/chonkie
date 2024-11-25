@@ -94,7 +94,7 @@ class SemanticChunker(BaseChunker):
                 "Cannot specify both similarity_threshold and similarity_percentile"
             )
         if similarity_threshold is None and similarity_percentile is None:
-            similarity_percentile = 0.8
+            similarity_percentile = 80
             raise Warning(
                 "No similarity threshold specified. Defaulting to 80th percentile."
             ) #TODO: Change this to be a non-blocking warning
@@ -211,6 +211,18 @@ class SemanticChunker(BaseChunker):
             )
         ]
 
+        # Get or compute similarity threshold
+        if self.similarity_threshold is None:
+            # Compute all pairwise similarities
+            all_similarities = [
+                self._get_semantic_similarity(
+                    sentences[i].embedding, sentences[i + 1].embedding
+                )
+                for i in range(len(sentences) - 1)
+            ]
+            self.similarity_threshold = float(
+                np.percentile(all_similarities, self.similarity_percentile)
+            )
         return sentences
 
     def _get_semantic_similarity(
@@ -240,21 +252,6 @@ class SemanticChunker(BaseChunker):
         if len(sentences) <= self.initial_sentences:
             return [sentences]
 
-        # Get or compute similarity threshold
-        if self.similarity_percentile is not None:
-            # Compute all pairwise similarities
-            all_similarities = [
-                self._get_semantic_similarity(
-                    sentences[i].embedding, sentences[i + 1].embedding
-                )
-                for i in range(len(sentences) - 1)
-            ]
-            similarity_threshold = float(
-                np.percentile(all_similarities, self.similarity_percentile)
-            )
-        else:
-            similarity_threshold = self.similarity_threshold
-
         groups = []
         current_group = sentences[: self.initial_sentences]
         current_embedding = self._compute_group_embedding(current_group)
@@ -265,7 +262,7 @@ class SemanticChunker(BaseChunker):
                 current_embedding, sentence.embedding
             )
 
-            if similarity >= similarity_threshold:
+            if similarity >= self.similarity_threshold:
                 # Add to current group
                 current_group.append(sentence)
                 # Update mean embedding
