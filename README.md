@@ -46,7 +46,7 @@ To install chonkie, simply run:
 pip install chonkie
 ```
 
-Chonkie follows the rule to have minimal defualt installs, read the [DOCS](/DOCS.md) to know the installation for your required chunker, or simply install `all` if you don't want to think about it (not recommended).
+Chonkie follows the rule to have minimal default installs, read the [DOCS](/DOCS.md) to know the installation for your required chunker, or simply install `all` if you don't want to think about it (not recommended).
 
 ```bash
 pip install chonkie[all]
