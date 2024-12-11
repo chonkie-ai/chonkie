@@ -31,6 +31,7 @@ class SemanticChunker(BaseChunker):
         self,
         embedding_model: Union[str, BaseEmbeddings] = "minishlab/potion-base-8M",
         mode: str = "window",
+        initial_sentences: int = 1,
         threshold: Union[str, float, int] = "auto",
         chunk_size: int = 512,
         similarity_window: int = 1,
@@ -47,6 +48,7 @@ class SemanticChunker(BaseChunker):
         Args:
             embedding_model: Name of the sentence-transformers model to load
             mode: Mode for grouping sentences, either "cumulative" or "window"
+            initial_sentences： Number of sentences to use as initial context when starting a new chunk in cumulative mode (default: 1, only used when mode="cumulative")
             threshold: Threshold for semantic similarity (0-1) or percentile (1-100), defaults to "auto"
             chunk_size: Maximum tokens allowed per chunk
             similarity_window: Number of sentences to consider for similarity threshold calculation
@@ -85,6 +87,7 @@ class SemanticChunker(BaseChunker):
             raise ValueError("threshold (int) must be between 1 and 100")
 
         self.mode = mode
+        self.initial_sentences = initial_sentences
         self.chunk_size = chunk_size
         self.threshold = threshold
         self.similarity_window = similarity_window

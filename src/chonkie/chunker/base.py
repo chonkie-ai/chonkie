@@ -30,8 +30,10 @@ class BaseChunker(ABC):
         if isinstance(tokenizer_or_token_counter, str):
             self.tokenizer = self._load_tokenizer(tokenizer_or_token_counter)
             self.token_counter = self._get_tokenizer_counter()
-        # Then check if the tokenizer_or_token_counter is a function via inspect
-        elif inspect.isfunction(tokenizer_or_token_counter):
+        # Then check if the tokenizer_or_token_counter is a function via inspect or method (e.g., a custom tokenizer function)
+        elif inspect.isfunction(tokenizer_or_token_counter) or inspect.ismethod(
+            tokenizer_or_token_counter
+        ):
             self.tokenizer = None
             self._tokenizer_backend = "callable"
             self.token_counter = tokenizer_or_token_counter
