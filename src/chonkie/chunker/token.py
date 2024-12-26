@@ -1,5 +1,6 @@
 """Token-based chunking."""
 
+from itertools import accumulate
 from typing import Any, Generator, List, Tuple, Union
 
 from chonkie.types import Chunk
@@ -131,9 +132,13 @@ class TokenChunker(BaseChunker):
         token_lists = [tokens for tokens, _, _ in chunks]
         texts = self._decode_batch(token_lists)
 
+        indices = [0] + [len(text) for text in texts]
+        indices = list(accumulate(indices))
+        index_pairs = list(zip(indices[:-1], indices[1:]))
+
         return [
-            Chunk(text=text, start_index=start, end_index=end, token_count=end - start)
-            for text, (_, start, end) in zip(texts, chunks)
+            Chunk(text=text, start_index=start, end_index=end, token_count=len(tokens))
+            for text, (start, end), tokens in zip(texts, index_pairs, token_lists)
         ]
 
     def _process_text_batch(self, texts: List[str]) -> List[List[Chunk]]:
@@ -158,7 +163,7 @@ class TokenChunker(BaseChunker):
         return result
 
     def chunk_batch(
-        self, texts: List[str], batch_size: int = None
+        self, texts: List[str], batch_size: Union[int, None] = None
     ) -> List[List[Chunk]]:
         """Split a batch of texts into their respective chunks.
 
