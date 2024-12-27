@@ -87,6 +87,7 @@ Chonkie provides several chunkers to help you split your text efficiently for RA
 - **TokenChunker**: Splits text into fixed-size token chunks.
 - **WordChunker**: Splits text into chunks based on words.
 - **SentenceChunker**: Splits text into chunks based on sentences.
+- **RecursiveChunker**: Splits text hierarchically using customizable rules to create semantically meaningful chunks.
 - **SemanticChunker**: Splits text into chunks based on semantic similarity.
 - **SDPMChunker**: Splits text using a Semantic Double-Pass Merge approach.
 - **LateChunker (experimental)**: Embeds text and then splits it to have better chunk embeddings.
@@ -125,7 +126,7 @@ And of course, special thanks to [Moto Moto](https://www.youtube.com/watch?v=I0z
 
 If you use Chonkie in your research, please cite it as follows:
 
-```
+```bibtex
 @misc{chonkie2024,
   author = {Minhas, Bhavnick},
   title = {Chonkie: A Fast Feature-full Chunking Library for RAG Bots},

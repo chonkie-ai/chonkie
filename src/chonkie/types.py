@@ -1,7 +1,7 @@
 """Dataclasses for Chonkie."""
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, Union
 
 if TYPE_CHECKING:
     import numpy as np
@@ -235,3 +235,144 @@ class LateChunk(Chunk):
 
     sentences: List[LateSentence] = field(default_factory=list)
     embedding: Optional["np.ndarray"] = field(default=None)
+
+@dataclass
+class RecursiveLevel:
+    """Configuration for a single level of recursive chunking.
+
+    Attributes:
+        delimiters: The delimiters to use for the level. If None, that level will use tokens to determine chunk boundaries.
+        whitespace: Whether to use whitespace as a delimiter.
+
+    """
+
+    delimiters: Union[List[str], str, None] = None
+    whitespace: bool = False
+
+    def __post_init__(self):
+        """Post-initialize the recursive level."""
+        self.validate()
+    
+    def validate(self):
+        """Validate the recursive level."""
+        if self.delimiters is not None and self.whitespace:
+            raise ValueError("Cannot have both delimiters and whitespace. "
+                             "Use two separate levels instead, one for whitespace and one for delimiters.")
+        if self.delimiters is not None:
+            for delimiter in self.delimiters:
+                if not isinstance(delimiter, str):
+                    raise ValueError("All delimiters must be strings")
+                if len(delimiter) == 0:
+                    raise ValueError("All delimiters must be non-empty strings")
+                if delimiter == " ":
+                    raise ValueError("Cannot use whitespace as a delimiter",
+                                     "Use whitespace=True instead")
+                
+    def __repr__(self) -> str:
+        """Get a string representation of the recursive level."""
+        return f"RecursiveLevel(delimiters={self.delimiters}, whitespace={self.whitespace})"
+    
+    def __str__(self) -> str:
+        """Get a string representation of the recursive level."""
+        return f"RecursiveLevel(delimiters={self.delimiters}, whitespace={self.whitespace})"
+
+@dataclass
+class RecursiveRules: 
+    """Collection of rules for recursive chunking."""
+
+    levels: Union[List[RecursiveLevel], RecursiveLevel, None] = None
+
+    def __post_init__(self):
+        """Initialize the recursive rules if not already initialized."""
+        # Set default levels if not already initialized
+        if self.levels is None:
+            # First level should be paragraphs
+            paragraph_level = RecursiveLevel(delimiters=["\n\n", "\n", "\r\n"],
+                                              whitespace=False)
+            # Second level should be sentences
+            sentence_level = RecursiveLevel(delimiters=[".", "?", "!"],
+                                            whitespace=False)
+            
+            # Third level can be sub-sentences, like '...', ',', ';', ':', etc.
+            sub_sentence_level = RecursiveLevel(delimiters=[',',
+                                                             ';',
+                                                             ':',
+                                                             '...',
+                                                             '-',
+                                                             '(',
+                                                             ')',
+                                                             '[',
+                                                             ']',
+                                                             '{',
+                                                             '}',
+                                                             '<',
+                                                             '>',
+                                                             '|',
+                                                             '~',
+                                                             '`',
+                                                             '\'',
+                                                             '\"'
+                                                             ],
+                                                 whitespace=False)
+
+            # Fourth level should be words
+            word_level = RecursiveLevel(delimiters=None,
+                                        whitespace=True)
+            # Fifth level should be tokens
+            # NOTE: When delimiters is None, the level will use tokens to determine chunk boundaries.
+            token_level = RecursiveLevel(delimiters=None,
+                                        whitespace=False)
+            self.levels = [paragraph_level,
+                            sentence_level,
+                            sub_sentence_level,
+                            word_level,
+                            token_level]
+        else:
+            if isinstance(self.levels, RecursiveLevel):
+                self.levels.validate()
+            elif isinstance(self.levels, list) and all(isinstance(level, RecursiveLevel) for level in self.levels):
+                for level in self.levels:
+                    level.validate()
+            
+    def __iter__(self):
+        """Iterate over the levels."""
+        return iter(self.levels)
+    
+    def __getitem__(self, index: int) -> RecursiveLevel:
+        """Get a level by index."""
+        return self.levels[index]
+
+    def __len__(self) -> int:
+        """Get the number of levels."""
+        return len(self.levels)
+    
+    def __repr__(self) -> str:
+        """Get a string representation of the recursive rules."""
+        return f"RecursiveRules(levels={self.levels})"
+    
+    def __str__(self) -> str:
+        """Get a string representation of the recursive rules."""
+        return f"RecursiveRules(levels={self.levels})"
+
+
+@dataclass
+class RecursiveChunk(Chunk):
+    """A Chunk with a level attribute."""
+
+    level: Union[int, None] = None
+
+    def __repr__(self) -> str:
+        """Get a string representation of the recursive chunk."""
+        return (f"RecursiveChunk(text={self.text}, "
+                f"start_index={self.start_index}, "
+                f"end_index={self.end_index}, "
+                f"token_count={self.token_count}, "
+                f"level={self.level})")
+    
+    def __str__(self) -> str:
+        """Get a string representation of the recursive chunk."""
+        return (f"RecursiveChunk(text={self.text}, "
+                f"start_index={self.start_index}, "
+                f"end_index={self.end_index}, "
+                f"token_count={self.token_count}, "
+                f"level={self.level})")

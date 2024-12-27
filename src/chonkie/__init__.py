@@ -2,12 +2,13 @@
 
 from .chunker import (
     BaseChunker,
+    LateChunker,
+    RecursiveChunker,
     SDPMChunker,
     SemanticChunker,
     SentenceChunker,
     TokenChunker,
     WordChunker,
-    LateChunker,
 )
 from .embeddings import (
     AutoEmbeddings,
@@ -23,11 +24,14 @@ from .refinery import (
 from .types import (
     Chunk,
     Context,
+    LateChunk,
+    RecursiveChunk,
+    RecursiveLevel,
+    RecursiveRules,
     SemanticChunk,
     SemanticSentence,
     Sentence,
     SentenceChunk,
-    LateChunk,
 )
 
 __version__ = "0.3.0"
@@ -45,6 +49,9 @@ __all__ = [
 __all__ += [
     "Context",
     "Chunk",
+    "RecursiveChunk",
+    "RecursiveLevel",
+    "RecursiveRules",
     "SentenceChunk",
     "SemanticChunk",
     "Sentence",
@@ -61,6 +68,7 @@ __all__ += [
     "SemanticChunker",
     "SDPMChunker",
     "LateChunker",
+    "RecursiveChunker",
 ]
 
 # Add all embeddings classes to __all__
