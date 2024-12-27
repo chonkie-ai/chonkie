@@ -419,6 +419,8 @@ class SemanticChunker(BaseChunker):
             sentences[split_indices[i] : split_indices[i + 1]]
             for i in range(len(split_indices) - 1)
         ]
+        # Add last sentence to the last group
+        groups[-1].append(sentences[-1])
         return groups
 
     def _group_sentences(self, sentences: List[Sentence]) -> List[List[Sentence]]:
