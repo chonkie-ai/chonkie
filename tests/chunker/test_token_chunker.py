@@ -331,5 +331,11 @@ def test_token_chunker_token_counts(tokenizer, sample_text):
     token_counts = [len(tokenizer.encode(chunk.text)) for chunk in chunks]
     assert all([chunk.token_count == token_count for chunk, token_count in zip(chunks, token_counts)]), "All chunks must have a token count equal to the length of the encoded text"
 
+def test_token_chunker_indices_batch(tokenizer, sample_text):
+    """Test that TokenChunker's indices correctly map to original text."""
+    chunker = TokenChunker(tokenizer=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunks = chunker.chunk_batch([sample_text]*10)[-1]
+    verify_chunk_indices(chunks, sample_text)
+
 if __name__ == "__main__":
     pytest.main()
