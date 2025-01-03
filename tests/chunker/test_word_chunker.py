@@ -12,9 +12,9 @@ while respecting a maximum token length. These tests verify that the chunker:
 """
 
 from typing import List
-from datasets import load_dataset
 
 import pytest
+from datasets import load_dataset
 from tokenizers import Tokenizer
 
 from chonkie import WordChunker
@@ -126,7 +126,6 @@ def test_word_chunker_single_chunk_text(tokenizer):
 
 def test_word_chunker_batch_chunking(tokenizer, sample_batch):
     """Test that the WordChunker can chunk a batch of texts."""
-
     # this is to avoid the following
     # DeprecationWarning: This process (pid=<SOME-PID>) is multi-threaded,
     # use of fork() may lead to deadlocks in the child.

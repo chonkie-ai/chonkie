@@ -1,13 +1,11 @@
 """Recursive chunker."""
 from bisect import bisect_left
-from dataclasses import dataclass
 from functools import lru_cache
 from itertools import accumulate
 from typing import Any, List, Optional, Union
 
 from chonkie.chunker.base import BaseChunker
-from chonkie.types import Chunk, RecursiveChunk, RecursiveRules, RecursiveLevel
-
+from chonkie.types import Chunk, RecursiveChunk, RecursiveLevel, RecursiveRules
 
 
 class RecursiveChunker(BaseChunker):

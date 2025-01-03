@@ -12,7 +12,8 @@ a recursive chunking strategy based on configurable rules. The tests verify:
 """
 
 import pytest
-from chonkie.chunker.recursive import RecursiveChunker, RecursiveRules, RecursiveLevel
+
+from chonkie.chunker.recursive import RecursiveChunker, RecursiveLevel, RecursiveRules
 from chonkie.types import Chunk
 
 

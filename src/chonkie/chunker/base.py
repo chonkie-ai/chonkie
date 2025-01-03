@@ -30,12 +30,6 @@ class BaseChunker(ABC):
         if isinstance(tokenizer_or_token_counter, str):
             self.tokenizer = self._load_tokenizer(tokenizer_or_token_counter)
             self.token_counter = self._get_tokenizer_counter()
-        # Then check if the tokenizer_or_token_counter is a function via inspect
-        elif inspect.isfunction(tokenizer_or_token_counter):
-            self.tokenizer = None
-            self._tokenizer_backend = "callable"
-            self.token_counter = tokenizer_or_token_counter
-        # If not function or string, then assume it's a tokenizer object
         else:
             self.tokenizer = tokenizer_or_token_counter
             self._tokenizer_backend = self._get_tokenizer_backend()
@@ -49,6 +43,12 @@ class BaseChunker(ABC):
             return "tokenizers"
         elif "tiktoken" in str(type(self.tokenizer)):
             return "tiktoken"
+        elif (
+            callable(self.tokenizer)
+            or inspect.isfunction(self.tokenizer)
+            or inspect.ismethod(self.tokenizer)
+        ):
+            return "callable"
         else:
             raise ValueError(
                 f"Tokenizer backend {str(type(self.tokenizer))} not supported"
@@ -107,6 +107,8 @@ class BaseChunker(ABC):
             return self._tokenizers_token_counter
         elif self._tokenizer_backend == "tiktoken":
             return self._tiktoken_token_counter
+        elif self._tokenizer_backend == "callable":
+            return self.tokenizer
         else:
             raise ValueError("Tokenizer backend not supported for token counting")
 
@@ -130,6 +132,10 @@ class BaseChunker(ABC):
             return self.tokenizer.encode(text, add_special_tokens=False).ids
         elif self._tokenizer_backend == "tiktoken":
             return self.tokenizer.encode(text)
+        elif self._tokenizer_backend == "callable":
+            raise NotImplementedError(
+                "Callable tokenizer backend does not support encoding."
+            )
         else:
             raise ValueError(
                 f"Tokenizer backend {self._tokenizer_backend} not supported."
@@ -148,6 +154,10 @@ class BaseChunker(ABC):
             ]
         elif self._tokenizer_backend == "tiktoken":
             return self.tokenizer.encode_batch(texts)
+        elif self._tokenizer_backend == "callable":
+            raise NotImplementedError(
+                "Callable tokenizer backend does not support batch encoding."
+            )
         else:
             raise ValueError(
                 f"Tokenizer backend {self._tokenizer_backend} not supported."
@@ -161,6 +171,10 @@ class BaseChunker(ABC):
             return self.tokenizer.decode(tokens)
         elif self._tokenizer_backend == "tiktoken":
             return self.tokenizer.decode(tokens)
+        elif self._tokenizer_backend == "callable":
+            raise NotImplementedError(
+                "Callable tokenizer backend does not support decoding."
+            )
         else:
             raise ValueError(
                 f"Tokenizer backend {self._tokenizer_backend} not supported."
@@ -174,6 +188,10 @@ class BaseChunker(ABC):
             return [self.tokenizer.decode(tokens) for tokens in token_lists]
         elif self._tokenizer_backend == "tiktoken":
             return [self.tokenizer.decode(tokens) for tokens in token_lists]
+        elif self._tokenizer_backend == "callable":
+            raise NotImplementedError(
+                "Callable tokenizer backend does not support batch decoding."
+            )
         else:
             raise ValueError(
                 f"Tokenizer backend {self._tokenizer_backend} not supported."

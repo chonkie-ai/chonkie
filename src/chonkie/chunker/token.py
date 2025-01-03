@@ -1,6 +1,5 @@
 """Token-based chunking."""
 
-from itertools import accumulate
 from typing import Any, Generator, List, Tuple, Union
 
 from chonkie.types import Chunk

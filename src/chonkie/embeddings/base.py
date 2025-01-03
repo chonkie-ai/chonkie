@@ -43,7 +43,6 @@ class BaseEmbeddings(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def embed_batch(self, texts: List[str]) -> List["np.ndarray"]:
         """Embed a list of text strings into vector representations.
 
@@ -76,7 +75,6 @@ class BaseEmbeddings(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def count_tokens_batch(self, texts: List[str]) -> List[int]:
         """Count the number of tokens in a list of text strings.
 
@@ -89,7 +87,6 @@ class BaseEmbeddings(ABC):
         """
         return [self.count_tokens(text) for text in texts]
 
-    @abstractmethod
     def similarity(self, u: "np.ndarray", v: "np.ndarray") -> float:
         """Compute the similarity between two embeddings.
 
@@ -106,9 +103,7 @@ class BaseEmbeddings(ABC):
             float: Similarity score between the two embeddings
 
         """
-        return np.dot(u, v) / (
-            np.linalg.norm(u) * np.linalg.norm(v)
-        )  # cosine similarity
+        return float(np.dot(u, v.T) / (np.linalg.norm(u) * np.linalg.norm(v)))  # cosine similarity
 
     @property
     @abstractmethod
