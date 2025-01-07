@@ -26,9 +26,41 @@ Ever wondered how much CHONKier other text splitting libraries are? Well, wonder
 
 > ZOOOOOM! Watch Chonkie run! 🏃‍♂️💨
 
-All benchmarks were run on the Paul Graham Essays Dataset using the GPT-2 tokenizer. Because Chonkie believes in transparency, we note that timings marked with ** were taken after a warm-up phase.
+### Wikipedia 500K Articles
+The following benchmarks were run on the first 500K articles from the Hugging Face `wikimedia/wikipedia` dataset
 
-### Token Chunking (ms)
+All tests were run on a `c3-highmem-4` VM from Google Cloud with 32 GB RAM and a 200 GB SSD Persistent Disk attachment.
+
+#### Token Chunking
+
+| Library | Time | Speed Factor |
+|---------|-----------|--------------|
+| 🦛 Chonkie | 2 min 17 sec | 1x (Im fast af boi) |
+| 🔗 LangChain | 2 min 42 sec | 1.18x slower |
+| 📚 LlamaIndex | 50 min | 21.9x slower |
+
+#### Sentence Chunking
+
+| Library | Time | Speed Factor |
+|---------|-----------|--------------|
+| 🦛 Chonkie | 7 min 16 sec | 1x (solo CHONK) |
+| 📚 LlamaIndex | 10 min 55 sec | 1.5x slower |
+| 🔗 LangChain | N/A | Doesn't exist |
+
+### Recursive Chunking
+
+| Library | Time | Speed Factor |
+|---------|-----------|--------------|
+| 🦛 Chonkie | 3 min 42 sec | 1x (🔃🔃) |
+| 🔗 LangChain | 7 min 36 sec | 2.05x slower |
+| 📚 LlamaIndex | N/A | Doesn't exist |
+
+### Paul Graham Essays Dataset
+
+The following benchmarks were run on the Paul Graham Essays Dataset using the GPT-2 tokenizer. 
+Because Chonkie believes in transparency, we note that timings marked with ** were taken after a warm-up phase.
+
+#### Token Chunking
 
 | Library | Time (ms) | Speed Factor |
 |---------|-----------|--------------|
@@ -36,7 +68,7 @@ All benchmarks were run on the Paul Graham Essays Dataset using the GPT-2 tokeni
 | 🔗 LangChain | 8.68 | 1.06x slower |
 | 📚 LlamaIndex | 272 | 33.25x slower |
 
-### Sentence Chunking (ms)
+#### Sentence Chunking 
 
 | Library | Time (ms) | Speed Factor |
 |---------|-----------|--------------|
@@ -44,7 +76,7 @@ All benchmarks were run on the Paul Graham Essays Dataset using the GPT-2 tokeni
 | 📚 LlamaIndex | 91.2 | 1.73x slower |
 | 🔗 LangChain | N/A | Doesn't exist |
 
-### Semantic Chunking (ms)
+#### Semantic Chunking 
 
 | Library | Time | Speed Factor |
 |---------|------|--------------|
