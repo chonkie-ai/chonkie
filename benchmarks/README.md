@@ -4,24 +4,6 @@
 
 Ever wondered how much CHONKier other text splitting libraries are? Well, wonder no more! We've put Chonkie up against some of the most popular RAG libraries out there, and the results are... well, let's just say Moto Moto might need to revise his famous quote! 
 
-## 📊 Size Comparison (Package Size)
-
-### Default Installation (Basic Chunking)
-
-| Library | Size | Chonk Factor |
-|---------|------|--------------|
-| 🦛 Chonkie | 9.7 MiB | 1x (base CHONK) |
-| 🔗 LangChain | 80 MiB | ~8.3x CHONKier |
-| 📚 LlamaIndex | 171 MiB | ~17.6x CHONKier |
-
-### With Semantic Features
-
-| Library | Size | Chonk Factor |
-|---------|------|--------------|
-| 🦛 Chonkie | 585 MiB | 1x (semantic CHONK) |
-| 🔗 LangChain | 625 MiB | ~1.07x CHONKier |
-| 📚 LlamaIndex | 678 MiB | ~1.16x CHONKier |
-
 ## ⚡ Speed Benchmarks
 
 > ZOOOOOM! Watch Chonkie run! 🏃‍♂️💨
@@ -47,7 +29,7 @@ All tests were run on a `c3-highmem-4` VM from Google Cloud with 32 GB RAM and a
 | 📚 LlamaIndex | 10 min 55 sec | 1.5x slower |
 | 🔗 LangChain | N/A | Doesn't exist |
 
-### Recursive Chunking
+#### Recursive Chunking
 
 | Library | Time | Speed Factor |
 |---------|-----------|--------------|
@@ -84,13 +66,26 @@ Because Chonkie believes in transparency, we note that timings marked with ** we
 | 🔗 LangChain | 899ms | 1.86x slower |
 | 📚 LlamaIndex | 1.2s | 2.49x slower |
 
-## 💡 Why These Numbers Matter
 
-### Size Benefits
-1. **Faster Installation**: Less to download = faster to get started
-2. **Lower Memory Footprint**: Lighter package = less RAM usage
-3. **Cleaner Dependencies**: Only install what you actually need
-4. **CI/CD Friendly**: Faster builds and deployments
+## 📊 Size Comparison (Package Size)
+
+### Default Installation (Basic Chunking)
+
+| Library | Size | Chonk Factor |
+|---------|------|--------------|
+| 🦛 Chonkie | 11.2 MiB | 1x (base CHONK) |
+| 🔗 LangChain | 80 MiB | ~7.1x CHONKier |
+| 📚 LlamaIndex | 171 MiB | ~15.3x CHONKier |
+
+### With Semantic Features
+
+| Library | Size | Chonk Factor |
+|---------|------|--------------|
+| 🦛 Chonkie | 585 MiB | 1x (semantic CHONK) |
+| 🔗 LangChain | 625 MiB | ~1.07x CHONKier |
+| 📚 LlamaIndex | 678 MiB | ~1.16x CHONKier |
+
+## 💡 Why These Numbers Matter
 
 ### Speed Benefits
 1. **Faster Processing**: Chonkie leads in all chunking methods!
@@ -98,9 +93,15 @@ Because Chonkie believes in transparency, we note that timings marked with ** we
 3. **Consistent Performance**: Fast across all chunking types
 4. **Scale Friendly**: Process more text in less time
 
+### Size Benefits
+1. **Faster Installation**: Less to download = faster to get started
+2. **Lower Memory Footprint**: Lighter package = less RAM usage
+3. **Cleaner Dependencies**: Only install what you actually need
+4. **CI/CD Friendly**: Faster builds and deployments
+
 Remember what Chonkie always says:
 > "I may be a hippo, but I don't have to be heavy... and I can still run fast!" 🦛✨
 
 ---
 
-*Note: All measurements were taken using Python 3.8+ on a clean virtual environment. Your actual mileage may vary slightly depending on your specific setup and dependencies. Speed benchmarks were performed on Paul Graham Essays Dataset using the GPT-2 tokenizer.*
+*Note: All measurements were taken using Python 3.8+ on a clean virtual environment. Your actual mileage may vary slightly depending on your specific setup and dependencies.*
