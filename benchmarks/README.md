@@ -8,8 +8,50 @@ Ever wondered how much CHONKier other text splitting libraries are? Well, wonder
 
 > ZOOOOOM! Watch Chonkie run! 🏃‍♂️💨
 
-### Wikipedia 500K Articles
-The following benchmarks were run on the first 500K articles from the Hugging Face `wikimedia/wikipedia` dataset
+### 100K Wikipedia Articles
+The following benchmarks were run on 100,000 Wikipedia articles from the 
+[`chonkie-ai/wikipedia-100k`](https://huggingface.co/datasets/chonkie-ai/wikipedia-100k) dataset
+
+All tests were run on a Google Colab A100 instance.
+
+#### Token Chunking
+
+| Library | Time | Speed Factor |
+|---------|-----------|--------------|
+| 🦛 Chonkie | 58 sec | 1x (Im fast af boi) |
+| 🔗 LangChain | 1 min 10 sec | 1.21x slower |
+| 📚 LlamaIndex | 50 min | 51.7x slower |
+
+#### Sentence Chunking
+
+| Library | Time | Speed Factor |
+|---------|-----------|--------------|
+| 🦛 Chonkie | 59 sec | 1x (solo CHONK) |
+| 📚 LlamaIndex | 3 min 59 sec | 4.05x slower |
+| 🔗 LangChain | N/A | Doesn't exist |
+
+#### Recursive Chunking
+
+| Library | Time | Speed Factor |
+|---------|-----------|--------------|
+| 🦛 Chonkie | 1 min 19 sec | 1x (🔃🔃) |
+| 🔗 LangChain | 2 min 45 sec | 2.09x slower |
+| 📚 LlamaIndex | N/A | Doesn't exist |
+
+#### Semantic Chunking
+
+Tested with `sentence-transformers/all-minilm-l6-v2` model unless specified otherwise.
+
+| Library | Time | Speed Factor |
+|---------|-----------|--------------|
+| 🦛 Chonkie (with default settings) | 13 min 59 sec | 1x (empathetic chonk) |
+| 🦛 Chonkie | 1 hour 8 min min 53 sec |  4.92x slower |
+| 🔗 LangChain | 1 hour 13 sec | 4.35x slower |
+| 📚 LlamaIndex | 1 hour 24 min 15 sec| 6.07x slower |
+
+### 500K Wikipedia Articles
+The following benchmarks were run on 500,000 Wikipedia articles from the 
+[`chonkie-ai/wikipedia-500k`](https://huggingface.co/datasets/chonkie-ai/wikipedia-500k) dataset
 
 All tests were run on a `c3-highmem-4` VM from Google Cloud with 32 GB RAM and a 200 GB SSD Persistent Disk attachment.
 
@@ -39,14 +81,13 @@ All tests were run on a `c3-highmem-4` VM from Google Cloud with 32 GB RAM and a
 
 ### Paul Graham Essays Dataset
 
-The following benchmarks were run on the Paul Graham Essays Dataset using the GPT-2 tokenizer. 
-Because Chonkie believes in transparency, we note that timings marked with ** were taken after a warm-up phase.
+The following benchmarks were run on the Paul Graham Essays dataset using the GPT-2 tokenizer. 
 
 #### Token Chunking
 
 | Library | Time (ms) | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie | 8.18** | 1x (fastest CHONK) |
+| 🦛 Chonkie | 8.18 | 1x (fastest CHONK) |
 | 🔗 LangChain | 8.68 | 1.06x slower |
 | 📚 LlamaIndex | 272 | 33.25x slower |
 
@@ -100,7 +141,7 @@ Because Chonkie believes in transparency, we note that timings marked with ** we
 4. **CI/CD Friendly**: Faster builds and deployments
 
 Remember what Chonkie always says:
-> "I may be a hippo, but I don't have to be heavy... and I can still run fast!" 🦛✨
+> "I may be a hippo, but I'm still light and fast!" 🦛✨
 
 ---
 
