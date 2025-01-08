@@ -44,7 +44,7 @@ Tested with `sentence-transformers/all-minilm-l6-v2` model unless specified othe
 
 | Library | Time | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie (with default settings) | 13 min 59 sec | 1x (empathetic chonk) |
+| 🦛 Chonkie (with default settings) | 13 min 59 sec | 1x (understanding chonk) |
 | 🦛 Chonkie | 1 hour 8 min min 53 sec |  4.92x slower |
 | 🔗 LangChain | 1 hour 13 sec | 4.35x slower |
 | 📚 LlamaIndex | 1 hour 24 min 15 sec| 6.07x slower |
