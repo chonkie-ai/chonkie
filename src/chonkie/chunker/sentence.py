@@ -402,8 +402,8 @@ class SentenceChunker(BaseChunker):
             f"SentenceChunker(tokenizer={self.tokenizer}, "
             f"chunk_size={self.chunk_size}, "
             f"chunk_overlap={self.chunk_overlap}, "
-            f"min_sentences_per_chunk={self.min_sentences_per_chunk})",
-            f"min_characters_per_sentence={self.min_characters_per_sentence}",
-            f"approximate={self.approximate}",
-            f"delim={self.delim}",
+            f"min_sentences_per_chunk={self.min_sentences_per_chunk}, "
+            f"min_characters_per_sentence={self.min_characters_per_sentence}, "
+            f"approximate={self.approximate}, "
+            f"delim={self.delim})"
         )

@@ -436,5 +436,5 @@ class LateChunker(BaseChunker):
             f"min_sentences_per_chunk={self.min_sentences_per_chunk}, "
             f"min_characters_per_sentence={self.min_characters_per_sentence}, "
             f"approximate={self.approximate}, "
-            f"delim={self.delim}"
+            f"delim={self.delim})"
         )

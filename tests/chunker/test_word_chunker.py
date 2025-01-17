@@ -147,7 +147,7 @@ def test_word_chunker_repr(tokenizer):
     """Test that the WordChunker has a string representation."""
     chunker = WordChunker(tokenizer=tokenizer, chunk_size=512, chunk_overlap=128)
 
-    assert repr(chunker) == "WordChunker(chunk_size=512, chunk_overlap=128)"
+    assert repr(chunker) == '''WordChunker(tokenizer=Tokenizer(version="1.0", truncation=None, padding=None, added_tokens=[{"id":50256, "content":"<|endoftext|>", "single_word":False, "lstrip":False, "rstrip":False, ...}], normalizer=None, pre_tokenizer=ByteLevel(add_prefix_space=False, trim_offsets=True, use_regex=True), post_processor=ByteLevel(add_prefix_space=True, trim_offsets=False, use_regex=True), decoder=ByteLevel(add_prefix_space=True, trim_offsets=True, use_regex=True), model=BPE(dropout=None, unk_token=None, continuing_subword_prefix="", end_of_word_suffix="", fuse_unk=False, byte_fallback=False, ignore_merges=False, vocab={"!":0, """:1, "#":2, "$":3, "%":4, ...}, merges=[("Ġ", "t"), ("Ġ", "a"), ("h", "e"), ("i", "n"), ("r", "e"), ...])), chunk_size=512, chunk_overlap=128)'''
 
 
 def test_word_chunker_call(tokenizer, sample_text):
