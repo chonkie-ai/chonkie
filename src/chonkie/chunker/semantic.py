@@ -556,5 +556,8 @@ class SemanticChunker(BaseChunker):
             f"threshold={self.threshold}, "
             f"similarity_window={self.similarity_window}, "
             f"min_sentences={self.min_sentences}, "
-            f"min_chunk_size={self.min_chunk_size})"
+            f"min_chunk_size={self.min_chunk_size})",
+            f"min_characters_per_sentence={self.min_characters_per_sentence}, ",
+            f"threshold_step={self.threshold_step}, ",
+            f"delim={self.delim}",
         )

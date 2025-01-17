@@ -245,12 +245,11 @@ class RecursiveChunker(BaseChunker):
 
     def __repr__(self) -> str:
         """Get a string representation of the recursive chunker."""
-        return (f"RecursiveChunker(rules={self.rules}, "
+        return (f"RecursiveChunker(tokenizer={self.tokenizer}, "
+                f"rules={self.rules}, "
                 f"chunk_size={self.chunk_size}, "
                 f"min_characters_per_chunk={self.min_characters_per_chunk})")
     
     def __str__(self) -> str:
         """Get a string representation of the recursive chunker."""
-        return (f"RecursiveChunker(rules={self.rules}, "
-                f"chunk_size={self.chunk_size}, "
-                f"min_characters_per_chunk={self.min_characters_per_chunk})")
+        return self.__repr__()

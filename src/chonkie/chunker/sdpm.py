@@ -172,5 +172,6 @@ class SDPMChunker(SemanticChunker):
             f"min_chunk_size={self.min_chunk_size}, "
             f"min_characters_per_sentence={self.min_characters_per_sentence}, "
             f"threshold_step={self.threshold_step}, "
+            f"delim={self.delim}, "
             f"skip_window={self.skip_window})"
         )
