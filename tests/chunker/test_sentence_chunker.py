@@ -100,7 +100,7 @@ def test_sentence_chunker_repr(tokenizer):
 
     assert (
         repr(chunker)
-        == "SentenceChunker(tokenizer=<Encoding 'gpt2'>, chunk_size=512, chunk_overlap=128, min_sentences_per_chunk=1, min_characters_per_sentence=12, approximate=True, delim=['.', '!', '?', '\n'])"
+        == "SentenceChunker(tokenizer=<Encoding 'gpt2'>, chunk_size=512, chunk_overlap=128, min_sentences_per_chunk=1, min_characters_per_sentence=12, approximate=True, delim=['.', '!', '?', '\\n'])"
     )
 
 
