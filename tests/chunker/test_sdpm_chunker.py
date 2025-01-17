@@ -141,7 +141,7 @@ def test_spdm_chunker_repr(embedding_model):
         "SPDMChunker(embedding_model=SentenceTransformerEmbeddings(model=all-MiniLM-L6-v2), "
         "mode=window, threshold=0.5, chunk_size=512, similarity_window=1, "
         "min_sentences=1, min_chunk_size=2, min_characters_per_sentence=12, "
-        "threshold_step=0.01, skip_window=2)"
+        "threshold_step=0.01, delim=['.', '!', '?', '\n'], skip_window=2)"
     )
     assert repr(chunker) == expected
 

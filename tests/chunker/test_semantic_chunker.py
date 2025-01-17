@@ -183,7 +183,7 @@ def test_semantic_chunker_repr(embedding_model):
     expected = (
         "SemanticChunker(embedding_model=Model2VecEmbeddings(model_name_or_path=minishlab/potion-base-8M), "
         "mode=window, chunk_size=512, threshold=0.5, similarity_window=1, "
-        "min_sentences=1, min_chunk_size=2)"
+        "min_sentences=1, min_chunk_size=2, min_characters_per_sentence=12, threshold_step=0.01, delim=['.', '!', '?', '\n'])"
     )
     assert repr(chunker) == expected
 
