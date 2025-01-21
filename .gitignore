@@ -4,3 +4,7 @@ chonkie.egg-info/
 
 build/*
 notebooks/*
+/venv
+test.txt
+main.py
+src/chonkie/refinery/hierarchical.py

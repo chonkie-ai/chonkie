@@ -1,10 +1,9 @@
 """Refinery class which adds overlap as context to chunks."""
 
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 from chonkie.refinery.base import BaseRefinery
-from chonkie.types import Chunk, Context, SemanticChunk, SentenceChunk
-
+from chonkie.types import Chunk, Context, SemanticChunk, SentenceChunk, RecursiveRules
 
 class OverlapRefinery(BaseRefinery):
     """Refinery class which adds overlap as context to chunks.
@@ -21,7 +20,10 @@ class OverlapRefinery(BaseRefinery):
     def __init__(
         self,
         context_size: int = 128,
+        min_tokens: Optional[int] = None,  # New parameter
         tokenizer: Any = None,
+        rules: Optional[RecursiveRules] = None,  # New parameter
+        method: str = "static",  # New parameter
         mode: str = "suffix",
         merge_context: bool = True,
         inplace: bool = True,
@@ -31,28 +33,57 @@ class OverlapRefinery(BaseRefinery):
 
         Args:
             context_size: Number of tokens to include in context
+            min_tokens: Minimum tokens required (only used with recursive method)
             tokenizer: Optional tokenizer for exact token counting
+            rules: RecursiveRules for context boundary detection (only used with recursive method)
+            method: Whether to use "static" or "recursive" context extraction
+            mode: Whether to add context to prefix or suffix
             merge_context: Whether to merge context with chunk text
             inplace: Whether to update chunks in place
             approximate: Whether to use approximate token counting
-            mode: Whether to add context to the prefix or suffix
-
         """
         super().__init__(context_size)
+        
+        # Validate method
+        if method not in ["static", "recursive"]:
+            raise ValueError("method must be either 'static' or 'recursive'")
+            
+        # Validate recursive-specific parameters
+        if method == "recursive":
+            if min_tokens is None:
+                raise ValueError("min_tokens must be specified when using recursive method")
+            if min_tokens > context_size:
+                raise ValueError("min_tokens cannot be greater than context_size")
+                
+        self.method = method
+        self.min_tokens = min_tokens
+        self.rules = rules if rules else RecursiveRules()
         self.merge_context = merge_context
         self.inplace = inplace
         self.mode = mode
 
-        # If tokenizer provided, we can do exact token counting
+        # Set up tokenizer and counting method
         if tokenizer is not None:
             self.tokenizer = tokenizer
             self.approximate = approximate
         else:
-            # Without tokenizer, must use approximate method
             self.approximate = True
-        
-        # Average number of characters per token
+            
+        # Average number of characters per token (for approximation)
         self._AVG_CHAR_PER_TOKEN = 7
+        
+        # Create hierarchical refinery if needed
+        if method == "recursive":
+            self._hierarchical = _HierarchicalRefinery(
+                context_size=context_size,
+                min_tokens=min_tokens,
+                tokenizer=tokenizer,
+                rules=rules,
+                mode=mode,
+                merge_context=merge_context,
+                inplace=inplace,
+                approximate=approximate
+            )
 
     def _get_refined_chunks(
         self, chunks: List[Chunk], inplace: bool = True
@@ -464,7 +495,11 @@ class OverlapRefinery(BaseRefinery):
         return refined_chunks
 
     def refine(self, chunks: List[Chunk]) -> List[Chunk]:
-        """Refine chunks by adding overlap context."""
+        """Refine chunks by adding appropriate context."""
+        if self.method == "recursive":
+            return self._hierarchical.refine(chunks)
+        
+        # Original static overlap logic
         if self.mode == "prefix":
             return self._refine_prefix(chunks)
         elif self.mode == "suffix":
@@ -478,4 +513,412 @@ class OverlapRefinery(BaseRefinery):
 
         Always returns True as this refinery has no external dependencies.
         """
+        return True
+
+class _HierarchicalRefinery(OverlapRefinery):
+    """Refinery that uses recursive rules to add hierarchical context.
+    
+    This refinery extends OverlapRefinery to add rule-based context selection.
+    It processes rules in sequence to find optimal context boundaries while 
+    maintaining context size between specified minimum and maximum limits.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        """Initialize the HierarchicalRefinery.
+
+        Args:
+            context_size: Maximum number of tokens for context
+            min_tokens: Minimum tokens required for context
+            tokenizer: Tokenizer for exact token counting
+            rules: RecursiveRules for context boundary detection
+            mode: Whether to add context to prefix or suffix
+            merge_context: Whether to merge context with chunk text
+            inplace: Whether to modify chunks in place
+            approximate: Whether to use approximate token counting
+        """
+
+        # Extract min_tokens before calling super()
+        min_tokens = kwargs.get('min_tokens')
+        context_size = kwargs.get('context_size')
+        rules = kwargs.get('rules')
+        
+        if min_tokens is None:
+            raise ValueError("min_tokens must be specified for HierarchicalRefinery")
+            
+        if min_tokens > context_size:
+            raise ValueError("min_tokens cannot be greater than context_size")
+        
+        super().__init__(**kwargs)
+
+        self.min_tokens = min_tokens
+        self.context_size = context_size
+        self.rules = rules if rules else RecursiveRules()
+        
+        # Set up token counting method based on tokenizer availability
+        if hasattr(self, "tokenizer") and not self.approximate:
+            self._count_tokens = self._exact_token_count
+        else:
+            self._count_tokens = self._approximate_token_count
+                
+    def _exact_token_count(self, text: str) -> int:
+        """Count tokens exactly using tokenizer."""
+        if not text:
+            return 0
+        return len(self.tokenizer.encode(text))
+    
+    def _approximate_token_count(self, text: str) -> int:
+        """Approximate token count based on text length."""
+        if not text:
+            return 0
+        return len(text) // self._AVG_CHAR_PER_TOKEN
+
+    def _find_primary_boundary_context(self, text: str) -> Optional[Tuple[str, int]]:
+        """Find the smallest chunk from the end using primary rule that meets min_tokens.
+        
+        Uses the first level of recursive rules to find natural boundaries,
+        accumulating from the end until reaching minimum token requirement.
+        
+        Args:
+            text: Text to search for boundaries
+            
+        Returns:
+            Tuple of (context_text, start_position) if found, None otherwise
+        """
+        if not self.rules or len(self.rules) == 0:
+            return None
+            
+        # Get primary rule (first level)
+        primary_rule = self.rules[0]
+        if not primary_rule.delimiters:
+            return None
+            
+        # Try each primary delimiter
+        for delimiter in primary_rule.delimiters:
+            parts = text.split(delimiter)
+            if len(parts) <= 1:
+                continue
+                
+            # Build context from the end
+            current_text = ""
+            accumulated_parts = []
+            
+            # Work backwards through parts
+            for part in reversed(parts):
+                if not part:  # Skip empty parts
+                    continue
+                    
+                # Test current chunk plus delimiter
+                test_text = part + delimiter + current_text
+                token_count = self._count_tokens(test_text)
+                
+                if token_count >= self.min_tokens:
+                    # Found minimal valid chunk
+                    if accumulated_parts:
+                        final_text = part + delimiter + delimiter.join(accumulated_parts)
+                    else:
+                        final_text = test_text
+                        
+                    # Find where this chunk starts in original text
+                    try:
+                        start_pos = text.rindex(final_text)
+                        return final_text, start_pos
+                    except ValueError:
+                        continue
+                        
+                # Keep accumulating if under minimum
+                accumulated_parts.insert(0, part)
+                current_text = test_text
+                
+        return None
+        
+    def _get_hierarchical_context(self, chunk: Chunk) -> Optional[Context]:
+        """Get context using hierarchical rules.
+        
+        First tries to find appropriate boundaries using primary rule,
+        then falls back to secondary rules if needed.
+        
+        Args:
+            chunk: Chunk to extract context from
+            
+        Returns:
+            Context object with appropriate boundaries
+        """
+        if not chunk.text:
+            return None
+            
+        # First try primary boundaries
+        primary_result = self._find_primary_boundary_context(chunk.text)
+        
+        if primary_result:
+            context_text, start_pos = primary_result
+            return Context(
+                text=context_text,
+                token_count=self._count_tokens(context_text),
+                start_index=chunk.start_index + start_pos,
+                end_index=chunk.end_index
+            )
+            
+        # Fallback to trying other rules if primary boundary didn't work
+        for level_index in range(1, len(self.rules)):
+            rule = self.rules[level_index]
+            if not rule.delimiters and not rule.whitespace:
+                continue
+                
+            if rule.delimiters:
+                for delimiter in rule.delimiters:
+                    pos = chunk.text.rfind(delimiter)
+                    while pos >= 0:
+                        candidate_text = chunk.text[pos + len(delimiter):]
+                        token_count = self._count_tokens(candidate_text)
+                        
+                        if self.min_tokens <= token_count <= self.context_size:
+                            return Context(
+                                text=candidate_text,
+                                token_count=token_count,
+                                start_index=chunk.start_index + pos + len(delimiter),
+                                end_index=chunk.end_index
+                            )
+                        pos = chunk.text.rfind(delimiter, 0, pos)
+                        
+            elif rule.whitespace:
+                words = chunk.text.split()
+                current_text = ""
+                for word in reversed(words):
+                    if current_text:
+                        test_text = word + " " + current_text
+                    else:
+                        test_text = word
+                    token_count = self._count_tokens(test_text)
+                    
+                    if token_count >= self.min_tokens:
+                        try:
+                            start_pos = chunk.text.rindex(test_text)
+                            return Context(
+                                text=test_text,
+                                token_count=token_count,
+                                start_index=chunk.start_index + start_pos,
+                                end_index=chunk.end_index
+                            )
+                        except ValueError:
+                            continue
+                            
+                    current_text = test_text
+        
+        # Last resort: use the whole chunk
+        return Context(
+            text=chunk.text,
+            token_count=self._count_tokens(chunk.text),
+            start_index=chunk.start_index,
+            end_index=chunk.end_index
+        )
+
+    def _refine_prefix(self, chunks: List[Chunk]) -> List[Chunk]:
+        """Refine chunks by adding hierarchical context to prefix.
+        
+        Override of OverlapRefinery method to use hierarchical rules.
+        """
+        if not chunks:
+            return chunks
+            
+        # Validate chunk types
+        if len(set(type(chunk) for chunk in chunks)) > 1:
+            raise ValueError("All chunks must be of the same type")
+            
+        if not self.inplace:
+            refined_chunks = [chunk.copy() for chunk in chunks]
+        else:
+            refined_chunks = chunks
+            
+        # Process chunks after first
+        for i in range(1, len(refined_chunks)):
+            # Get hierarchical context from previous chunk
+            context = self._get_hierarchical_context(chunks[i - 1])
+            setattr(refined_chunks[i], "context", context)
+            
+            # Optionally update chunk text to include context
+            if self.merge_context and context:
+                refined_chunks[i].text = context.text + refined_chunks[i].text
+                refined_chunks[i].start_index = context.start_index
+                refined_chunks[i].token_count = (
+                    refined_chunks[i].token_count + context.token_count
+                )
+                
+        return refined_chunks
+        
+    def _find_forward_boundary_context(self, text: str) -> Optional[Tuple[str, int]]:
+        """Find the smallest chunk from the start using primary rule that meets min_tokens.
+        
+        Uses the first level of recursive rules to find natural boundaries,
+        accumulating from the start until reaching minimum token requirement.
+        
+        Args:
+            text: Text to search for boundaries
+            
+        Returns:
+            Tuple of (context_text, end_position) if found, None otherwise
+        """
+        if not self.rules or len(self.rules) == 0:
+            return None
+            
+        # Get primary rule (first level)
+        primary_rule = self.rules[0]
+        if not primary_rule.delimiters:
+            return None
+            
+        # Try each primary delimiter
+        for delimiter in primary_rule.delimiters:
+            parts = text.split(delimiter)
+            if len(parts) <= 1:
+                continue
+                
+            # Build context from the start
+            current_text = ""
+            accumulated_parts = []
+            
+            # Work forwards through parts
+            for part in parts:
+                if not part:  # Skip empty parts
+                    continue
+                    
+                # Test current chunk plus delimiter
+                test_text = current_text + delimiter + part if current_text else part
+                token_count = self._count_tokens(test_text)
+                
+                if token_count >= self.min_tokens:
+                    # Found minimal valid chunk
+                    if accumulated_parts:
+                        final_text = delimiter.join(accumulated_parts) + delimiter + part
+                    else:
+                        final_text = test_text
+                        
+                    # Find where this chunk ends in original text
+                    try:
+                        start_pos = text.index(final_text)
+                        return final_text, start_pos + len(final_text)
+                    except ValueError:
+                        continue
+                        
+                # Keep accumulating if under minimum
+                accumulated_parts.append(part)
+                current_text = test_text
+                
+        return None
+
+    def _get_forward_hierarchical_context(self, chunk: Chunk) -> Optional[Context]:
+        """Get context using hierarchical rules, working forwards.
+        
+        First tries to find appropriate boundaries using primary rule,
+        then falls back to secondary rules if needed.
+        
+        Args:
+            chunk: Chunk to extract context from
+            
+        Returns:
+            Context object with appropriate boundaries
+        """
+        if not chunk.text:
+            return None
+            
+        # First try primary boundaries
+        primary_result = self._find_forward_boundary_context(chunk.text)
+        
+        if primary_result:
+            context_text, end_pos = primary_result
+            return Context(
+                text=context_text,
+                token_count=self._count_tokens(context_text),
+                start_index=chunk.start_index,
+                end_index=chunk.start_index + end_pos
+            )
+            
+        # Fallback to trying other rules if primary boundary didn't work
+        for level_index in range(1, len(self.rules)):
+            rule = self.rules[level_index]
+            if not rule.delimiters and not rule.whitespace:
+                continue
+                
+            if rule.delimiters:
+                for delimiter in rule.delimiters:
+                    pos = chunk.text.find(delimiter)
+                    while pos >= 0:
+                        candidate_text = chunk.text[:pos]
+                        token_count = self._count_tokens(candidate_text)
+                        
+                        if self.min_tokens <= token_count <= self.context_size:
+                            return Context(
+                                text=candidate_text,
+                                token_count=token_count,
+                                start_index=chunk.start_index,
+                                end_index=chunk.start_index + pos
+                            )
+                        pos = chunk.text.find(delimiter, pos + 1)
+                        
+            elif rule.whitespace:
+                words = chunk.text.split()
+                current_text = ""
+                for word in words:
+                    if current_text:
+                        test_text = current_text + " " + word
+                    else:
+                        test_text = word
+                    token_count = self._count_tokens(test_text)
+                    
+                    if token_count >= self.min_tokens:
+                        try:
+                            end_pos = chunk.text.index(test_text) + len(test_text)
+                            return Context(
+                                text=test_text,
+                                token_count=token_count,
+                                start_index=chunk.start_index,
+                                end_index=chunk.start_index + end_pos
+                            )
+                        except ValueError:
+                            continue
+                            
+                    current_text = test_text
+        
+        # Last resort: use the whole chunk
+        return Context(
+            text=chunk.text,
+            token_count=self._count_tokens(chunk.text),
+            start_index=chunk.start_index,
+            end_index=chunk.end_index
+        )
+
+    def _refine_suffix(self, chunks: List[Chunk]) -> List[Chunk]:
+        """Refine chunks by adding hierarchical context to suffix.
+        
+        Uses forward context search from the start of the next chunk.
+        """
+        if not chunks:
+            return chunks
+            
+        # Validate chunk types
+        if len(set(type(chunk) for chunk in chunks)) > 1:
+            raise ValueError("All chunks must be of the same type")
+            
+        if not self.inplace:
+            refined_chunks = [chunk.copy() for chunk in chunks]
+        else:
+            refined_chunks = chunks
+            
+        # Process chunks before last
+        for i in range(len(refined_chunks) - 1):
+            # Get hierarchical context from next chunk, working forwards
+            context = self._get_forward_hierarchical_context(chunks[i + 1])
+            setattr(refined_chunks[i], "context", context)
+            
+            # Optionally update chunk text to include context
+            if self.merge_context and context:
+                refined_chunks[i].text = refined_chunks[i].text + context.text
+                refined_chunks[i].end_index = context.end_index
+                refined_chunks[i].token_count = (
+                    refined_chunks[i].token_count + context.token_count
+                )
+                
+        return refined_chunks
+
+    @classmethod
+    def is_available(cls) -> bool:
+        """Check if HierarchicalRefinery is available."""
         return True
