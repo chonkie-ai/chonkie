@@ -43,8 +43,9 @@ Documentation = "https://docs.chonkie.ai"
 model2vec = ["model2vec>=0.3.0", "numpy>=1.23.0, <2.2"]
 st = ["sentence-transformers>=3.0.0", "numpy>=1.23.0, <2.2"]
 openai = ["openai>=1.0.0", "numpy>=1.23.0, <2.2"]
+ollama = ["ollama>=0.4.0", "numpy>=1.23.0, <2.2", "requests>=2.32.0"]
 semantic = ["model2vec>=0.3.0", "numpy>=1.23.0, <2.2"]
-all = ["sentence-transformers>=3.0.0", "numpy>=1.23.0, <2.2", "openai>=1.0.0", "model2vec>=0.3.0"]
+all = ["sentence-transformers>=3.0.0", "numpy>=1.23.0, <2.2", "openai>=1.0.0", "model2vec>=0.3.0", "ollama>=0.4.0", "numpy>=1.23.0, <2.2", "requests>=2.32.0"]
 dev = [
     "pytest>=6.2.0", 
     "pytest-cov>=4.0.0",
