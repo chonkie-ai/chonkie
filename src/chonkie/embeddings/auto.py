@@ -23,6 +23,9 @@ class AutoEmbeddings:
         # Get Anthropic embeddings
         embeddings = AutoEmbeddings.get_embeddings("anthropic://claude-v1", api_key="...")
 
+        # Get LiteLLM embeddings
+        embeddings = AutoEmbeddings.get_embeddings("huggingface/microsoft/codebert-base", api_key="...")
+
     """
 
     @classmethod
@@ -50,6 +53,9 @@ class AutoEmbeddings:
 
             # Get Anthropic embeddings
             embeddings = AutoEmbeddings.get_embeddings("anthropic://claude-v1", api_key="...")
+
+            # Get LiteLLM embeddings
+            embeddings = AutoEmbeddings.get_embeddings("huggingface/microsoft/codebert-base", api_key="...")
 
         """
         # Load embeddings instance if already provided

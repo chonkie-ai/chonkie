@@ -4,7 +4,7 @@ from typing import List
 import pytest
 
 from chonkie import SemanticChunker
-from chonkie.embeddings import Model2VecEmbeddings, OpenAIEmbeddings
+from chonkie.embeddings import Model2VecEmbeddings, OpenAIEmbeddings, LiteLLMEmbeddings
 from chonkie.types import Chunk, SemanticChunk
 
 
@@ -43,6 +43,17 @@ def openai_embedding_model():
     api_key = os.environ.get("OPENAI_API_KEY")
     return OpenAIEmbeddings(model="text-embedding-3-small", api_key=api_key)
 
+@pytest.fixture
+def litellm_embedding_model():
+    """Fixture that returns an LiteLLM embedding model FROM huggingface for testing.
+    
+    Returns:
+        LiteLLMEmbeddings: A model from huggingface initilaized with LiteLLMEmbeddings
+            and the API key from environment variables.
+            
+    """
+    api_key = os.environ.get("HUGGINGFACE_API_KEY")
+    return LiteLLMEmbeddings(model="huggingface/microsoft/codebert-base", api_key=api_key)
 
 @pytest.fixture
 def sample_complex_markdown_text():
@@ -114,6 +125,27 @@ def test_semantic_chunker_initialization_sentence_transformer():
     """Test that the SemanticChunker can be initialized with SentenceTransformer model."""
     chunker = SemanticChunker(
         embedding_model="all-MiniLM-L6-v2",
+        chunk_size=512,
+        threshold=0.5,
+    )
+
+    assert chunker is not None
+    assert chunker.chunk_size == 512
+    assert chunker.threshold == 0.5
+    assert chunker.mode == "window"
+    assert chunker.similarity_window == 1
+    assert chunker.min_sentences == 1
+    assert chunker.min_chunk_size == 2
+
+
+@pytest.mark.skipif(
+    "HUGGINGFACE_API_KEY" not in os.environ,
+    reason="Skipping test because HUGGINGFACE_API_KEY is not defined",
+)
+def test_semantic_chunker_initialization_litellm(litellm_embedding_model):
+    """Test that the SemanticChunker can be initialized with required parameters."""
+    chunker = SemanticChunker(
+        embedding_model=litellm_embedding_model,
         chunk_size=512,
         threshold=0.5,
     )

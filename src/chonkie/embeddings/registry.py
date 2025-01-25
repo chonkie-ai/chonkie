@@ -6,7 +6,7 @@ from .base import BaseEmbeddings
 from .model2vec import Model2VecEmbeddings
 from .openai import OpenAIEmbeddings
 from .sentence_transformer import SentenceTransformerEmbeddings
-
+from .litellm import LiteLLMEmbeddings
 
 @dataclass
 class RegistryEntry:
@@ -158,4 +158,11 @@ EmbeddingsRegistry.register(
     Model2VecEmbeddings,
     pattern=r"^minishlab/|^minishlab/potion-base-|^minishlab/potion-|^potion-",
     supported_types=["Model2Vec", "model2vec"],
+)
+
+# Register LiteLLM embeddings
+EmbeddingsRegistry.register(
+    "litellm",
+    LiteLLMEmbeddings,
+    pattern=r"^litellm/|^huggingface/"
 )
