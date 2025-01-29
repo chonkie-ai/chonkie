@@ -337,5 +337,12 @@ def test_token_chunker_indices_batch(tiktokenizer, sample_text):
     chunks = chunker.chunk_batch([sample_text]*10)[-1]
     verify_chunk_indices(chunks, sample_text)
 
+def test_token_chunker_return_type(tiktokenizer, sample_text):
+    """Test that TokenChunker's return type is correctly set."""
+    chunker = TokenChunker(tokenizer=tiktokenizer, chunk_size=512, chunk_overlap=128, return_type="texts")
+    chunks = chunker.chunk(sample_text)
+    assert all([type(chunk) is str for chunk in chunks])
+    assert all([len(tiktokenizer.encode(chunk)) <= 512 for chunk in chunks])
+
 if __name__ == "__main__":
     pytest.main()

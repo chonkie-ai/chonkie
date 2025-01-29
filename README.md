@@ -9,7 +9,7 @@
 [![Documentation](https://img.shields.io/badge/docs-chonkie.ai-blue.svg)](https://docs.chonkie.ai)
 ![Package size](https://img.shields.io/badge/size-11.2MB-blue)
 [![Downloads](https://static.pepy.tech/badge/chonkie)](https://pepy.tech/project/chonkie)
-[![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/nMYNVyuB5Y?style=flat)](https://discord.gg/rYYp6DC4cv)
+[![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/rYYp6DC4cv?style=flat)](https://discord.gg/rYYp6DC4cv)
 [![GitHub stars](https://img.shields.io/github/stars/bhavnicksm/chonkie.svg)](https://github.com/bhavnicksm/chonkie/stargazers)
 
 _The no-nonsense RAG chunking library that's lightweight, lightning-fast, and ready to CHONK your texts_

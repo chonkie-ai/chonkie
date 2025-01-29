@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chonkie"
-version = "0.4.0"
+version = "0.4.1"
 description = "🦛 CHONK your texts with Chonkie ✨ - The no-nonsense RAG chunking library"
 readme = "README.md"
 requires-python = ">=3.9"

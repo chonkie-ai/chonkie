@@ -34,9 +34,9 @@ from .types import (
     SentenceChunk,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __name__ = "chonkie"
-__author__ = "Bhavnick Minhas"
+__author__ = "Chonkie AI"
 
 # Add basic package metadata to __all__
 __all__ = [

@@ -1,5 +1,8 @@
+"""Base class for all embeddings implementations."""
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, List, Union
+
+import numpy as np
 
 # for type checking
 if TYPE_CHECKING:

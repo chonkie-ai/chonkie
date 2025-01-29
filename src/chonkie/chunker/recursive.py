@@ -2,7 +2,7 @@
 from bisect import bisect_left
 from functools import lru_cache
 from itertools import accumulate
-from typing import Any, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, Literal
 
 from chonkie.chunker.base import BaseChunker
 from chonkie.types import Chunk, RecursiveChunk, RecursiveLevel, RecursiveRules
@@ -18,21 +18,35 @@ class RecursiveChunker(BaseChunker):
     """
 
     def __init__(self,
-                 tokenizer: Union[str, Any] = "gpt2",
+                 tokenizer_or_token_counter: Union[str, Callable, Any] = "gpt2",
                  chunk_size: int = 512,
+                 min_characters_per_chunk: int = 12,
                  rules: RecursiveRules = RecursiveRules(), 
-                 min_characters_per_chunk: int = 12
+                 return_type: Literal["chunks", "texts"] = "chunks"
                  ) -> None:
         """Initialize the recursive chunker.
 
         Args:
-            tokenizer: The tokenizer to use for encoding/decoding.
+            tokenizer_or_token_counter: The tokenizer or token counter to use for encoding/decoding.
             chunk_size: The size of the chunks to return.
-            rules: The rules to use for chunking.
             min_characters_per_chunk: The minimum number of characters per chunk.
-            
+            rules: The rules to use for chunking.
+            return_type: Whether to return chunks or texts.
+        
+        Raises:
+            ValueError: If parameters are invalid.
+
         """
-        super().__init__(tokenizer)
+        super().__init__(tokenizer_or_token_counter=tokenizer_or_token_counter)
+        
+        if chunk_size <= 0:
+            raise ValueError("chunk_size must be positive")
+        if min_characters_per_chunk < 1:
+            raise ValueError("min_characters_per_chunk must be at least 1")
+        if return_type not in ["chunks", "texts"]:
+            raise ValueError("Invalid return_type. Must be either 'chunks' or 'texts'.")
+        
+        self.return_type = return_type
         self.rules = rules
         self.chunk_size = chunk_size
         self.min_characters_per_chunk = min_characters_per_chunk
@@ -194,7 +208,10 @@ class RecursiveChunker(BaseChunker):
         
         # If level is out of bounds, return the text as a chunk
         if level >= len(self.rules):
-            return [self._create_chunk(text, self._get_token_count(text), level, full_text)]
+            if self.return_type == "chunks":
+                return [self._create_chunk(text, self._get_token_count(text), level, full_text)]
+            elif self.return_type == "texts":
+                return [text]
 
         # If full_text is not provided, use the text
         if full_text is None:
@@ -227,30 +244,32 @@ class RecursiveChunker(BaseChunker):
             if token_count > self.chunk_size:
                 chunks.extend(self._recursive_chunk(split, level + 1, full_text))
             else:
-                if rule.delimiters is None and not rule.whitespace:
-                    # NOTE: This is a hack to get the decoded text, since merged = splits = token_splits
-                    # And we don't want to encode/decode the text again, that would be inefficient
-                    decoded_text = "".join(merged)
-                    chunks.append(self._create_chunk(split, token_count, level, decoded_text))
-                else:
-                    chunks.append(self._create_chunk(split, token_count, level, full_text))
-
+                if self.return_type == "chunks":
+                    if rule.delimiters is None and not rule.whitespace:
+                        # NOTE: This is a hack to get the decoded text, since merged = splits = token_splits
+                        # And we don't want to encode/decode the text again, that would be inefficient
+                        decoded_text = "".join(merged)
+                        chunks.append(self._create_chunk(split, token_count, level, decoded_text))
+                    else:
+                        chunks.append(self._create_chunk(split, token_count, level, full_text))
+                elif self.return_type == "texts":
+                    chunks.append(split)
         return chunks
-
 
     def chunk(self, text: str) -> List[Chunk]:
         """Chunk the text."""
         return self._recursive_chunk(text, level=0, full_text=text)
 
-
     def __repr__(self) -> str:
         """Get a string representation of the recursive chunker."""
         return (f"RecursiveChunker(rules={self.rules}, "
                 f"chunk_size={self.chunk_size}, "
-                f"min_characters_per_chunk={self.min_characters_per_chunk})")
+                f"min_characters_per_chunk={self.min_characters_per_chunk}, "
+                f"return_type={self.return_type})")
     
     def __str__(self) -> str:
         """Get a string representation of the recursive chunker."""
         return (f"RecursiveChunker(rules={self.rules}, "
                 f"chunk_size={self.chunk_size}, "
-                f"min_characters_per_chunk={self.min_characters_per_chunk})")
+                f"min_characters_per_chunk={self.min_characters_per_chunk}, "
+                f"return_type={self.return_type})")
