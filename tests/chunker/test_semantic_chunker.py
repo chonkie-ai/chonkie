@@ -319,6 +319,13 @@ def test_semantic_chunker_reconstruction_batch(embedding_model, sample_text):
     chunks = chunker.chunk_batch([sample_text]*10)[-1]
     assert sample_text == "".join([chunk.text for chunk in chunks])
 
+def test_semantic_chunker_return_type(embedding_model, sample_text):
+    """Test that SemanticChunker's return type is correctly set."""
+    chunker = SemanticChunker(embedding_model=embedding_model, chunk_size=512, threshold=0.5, return_type="texts")
+    chunks = chunker.chunk(sample_text)
+    tokenizer = embedding_model.get_tokenizer_or_token_counter()
+    assert all([type(chunk) is str for chunk in chunks])
+    assert all([len(tokenizer.encode(chunk)) <= 512 for chunk in chunks])
 
 if __name__ == "__main__":
     pytest.main()

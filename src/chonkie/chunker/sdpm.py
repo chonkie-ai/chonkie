@@ -1,6 +1,6 @@
 """Semantic Double Pass Merge chunking using sentence embeddings."""
 
-from typing import Any, List, Union
+from typing import Any, List, Union, Literal
 
 from chonkie.types import SemanticChunk, Sentence
 
@@ -17,15 +17,17 @@ class SDPMChunker(SemanticChunker):
 
     Args:
         embedding_model: Sentence embedding model to use
-        similarity_threshold: Minimum similarity score to consider sentences similar
-        similarity_percentile: Minimum similarity percentile to consider sentences similar
+        mode: Mode for grouping sentences, either "cumulative" or "window"
+        threshold: Threshold for semantic similarity (0-1) or percentile (1-100), defaults to "auto"
         chunk_size: Maximum token count for a chunk
-        initial_sentences: Number of sentences to consider for initial grouping
-        skip_window: Number of chunks to skip when looking for similarities
+        similarity_window: Number of sentences to consider for similarity threshold calculation
+        min_sentences: Minimum number of sentences per chunk
         min_chunk_size: Minimum number of tokens per sentence
-
-    Methods:
-        chunk: Split text into chunks using the SDPM approach.
+        min_characters_per_sentence: Minimum number of characters per sentence
+        threshold_step: Step size for similarity threshold calculation
+        delim: Delimiters to split sentences on
+        skip_window: Number of chunks to skip when looking for similarities
+        return_type: Whether to return chunks or texts
 
     """
 
@@ -42,6 +44,7 @@ class SDPMChunker(SemanticChunker):
         threshold_step: float = 0.01,
         delim: Union[str, List[str]] = [".", "!", "?", "\n"],
         skip_window: int = 1,
+        return_type: Literal["chunks", "texts"] = "chunks",
         **kwargs
     ):
         """Initialize the SDPMChunker.
@@ -58,6 +61,7 @@ class SDPMChunker(SemanticChunker):
             threshold_step: Step size for similarity threshold calculation
             delim: Delimiters to split sentences on
             skip_window: Number of chunks to skip when looking for similarities
+            return_type: Whether to return chunks or texts
             **kwargs: Additional keyword arguments
 
         """
@@ -72,9 +76,13 @@ class SDPMChunker(SemanticChunker):
             min_characters_per_sentence=min_characters_per_sentence,
             threshold_step=threshold_step,
             delim=delim,
+            return_type=return_type,
             **kwargs
         )
         self.skip_window = skip_window
+
+        # Remove the multiprocessing flag from the base class
+        self._use_multiprocessing = False
 
     def _merge_groups(self, groups: List[List[Sentence]]) -> List[Sentence]:
         """Merge the groups together."""

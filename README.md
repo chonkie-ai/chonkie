@@ -9,7 +9,7 @@
 [![Documentation](https://img.shields.io/badge/docs-chonkie.ai-blue.svg)](https://docs.chonkie.ai)
 ![Package size](https://img.shields.io/badge/size-11.2MB-blue)
 [![Downloads](https://static.pepy.tech/badge/chonkie)](https://pepy.tech/project/chonkie)
-[![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/nMYNVyuB5Y?style=flat)](https://discord.gg/nMYNVyuB5Y)
+[![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/rYYp6DC4cv?style=flat)](https://discord.gg/rYYp6DC4cv)
 [![GitHub stars](https://img.shields.io/github/stars/bhavnicksm/chonkie.svg)](https://github.com/bhavnicksm/chonkie/stargazers)
 
 _The no-nonsense RAG chunking library that's lightweight, lightning-fast, and ready to CHONK your texts_
@@ -23,11 +23,19 @@ _The no-nonsense RAG chunking library that's lightweight, lightning-fast, and re
 
 </div>
 
-so i found myself making another RAG bot (for the 2342148th time) and meanwhile, explaining to my juniors about why we should use chunking in our RAG bots, only to realise that i would have to write chunking all over again unless i use the bloated software library X or the extremely feature-less library Y. _WHY CAN I NOT HAVE SOMETHING JUST RIGHT, UGH?_
+Ever found yourself building yet another RAG bot (your 2,342,148th one), only to hit that all-too-familiar wall? You know the one —— where you're stuck choosing between:
 
-Can't i just install, import and run chunking and not have to worry about dependencies, bloat, speed or other factors?
+- Library X: A behemoth that takes forever to install and probably includes three different kitchen sinks
+- Library Y: So bare-bones it might as well be a "Hello World" program
+- Writing it yourself? For the 2,342,149th time, _sigh_
 
-Well, with chonkie you can! (chonkie boi is a gud boi)
+And you think to yourself:
+
+> "WHY CAN'T THIS JUST BE SIMPLE?!" </br>
+> "Why do I need to choose between bloated and bare-bones?" </br>
+> "Why can't I just install, import, and CHONK?!" </br>
+
+Well, look no further than Chonkie! (chonkie boi is a gud boi 🦛💕)
 
 **🚀 Feature-rich**: All the CHONKs you'd ever need </br>
 **✨ Easy to use**: Install, Import, CHONK </br>
@@ -37,7 +45,7 @@ Well, with chonkie you can! (chonkie boi is a gud boi)
 **🦛 Cute CHONK mascot**: psst it's a pygmy hippo btw </br>
 **❤️ [Moto Moto](#acknowledgements)'s favorite python library** </br>
 
-What're you waiting for, **just CHONK it**!
+**Chonkie** is a chunking library that "**just works™**".
 
 # Installation
 

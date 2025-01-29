@@ -152,9 +152,9 @@ def test_token_chunker_initialization_tik(tiktokenizer):
     assert chunker.chunk_overlap == 128
 
 
-def test_token_chunker_chunking(tokenizer, sample_text):
+def test_token_chunker_chunking(tiktokenizer, sample_text):
     """Test that the TokenChunker can chunk a sample text into tokens."""
-    chunker = TokenChunker(tokenizer=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = TokenChunker(tokenizer=tiktokenizer, chunk_size=512, chunk_overlap=128)
     chunks = chunker.chunk(sample_text)
 
     assert len(chunks) > 0
@@ -196,9 +196,9 @@ def test_token_chunker_chunking_tik(tiktokenizer, sample_text):
     assert all([chunk.end_index is not None for chunk in chunks])
 
 
-def test_token_chunker_empty_text(tokenizer):
+def test_token_chunker_empty_text(tiktokenizer):
     """Test that the TokenChunker can handle empty text input."""
-    chunker = TokenChunker(tokenizer=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = TokenChunker(tokenizer=tiktokenizer, chunk_size=512, chunk_overlap=128)
     chunks = chunker.chunk("")
 
     assert len(chunks) == 0
@@ -246,9 +246,9 @@ def test_token_chunker_single_chunk_text(tokenizer):
     assert chunks[0].text == "Hello, how are you?"
 
 
-def test_token_chunker_batch_chunking(tokenizer, sample_batch):
+def test_token_chunker_batch_chunking(tiktokenizer, sample_batch):
     """Test that the TokenChunker can chunk a batch of texts into tokens."""
-    chunker = TokenChunker(tokenizer=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = TokenChunker(tokenizer=tiktokenizer, chunk_size=512, chunk_overlap=128)
     chunks = chunker.chunk_batch(sample_batch)
 
     assert len(chunks) > 0
@@ -267,16 +267,16 @@ def test_token_chunker_batch_chunking(tokenizer, sample_batch):
     )
 
 
-def test_token_chunker_repr(tokenizer):
+def test_token_chunker_repr(tiktokenizer):
     """Test that the TokenChunker has a string representation."""
-    chunker = TokenChunker(tokenizer=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = TokenChunker(tokenizer=tiktokenizer, chunk_size=512, chunk_overlap=128)
 
-    assert repr(chunker) == "TokenChunker(chunk_size=512, chunk_overlap=128)"
+    assert repr(chunker) == "TokenChunker(tokenizer=<Encoding 'gpt2'>, chunk_size=512, chunk_overlap=128)"
 
 
-def test_token_chunker_call(tokenizer, sample_text):
+def test_token_chunker_call(tiktokenizer, sample_text):
     """Test that the TokenChunker can be called directly."""
-    chunker = TokenChunker(tokenizer=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = TokenChunker(tokenizer=tiktokenizer, chunk_size=512, chunk_overlap=128)
     chunks = chunker(sample_text)
 
     assert len(chunks) > 0
@@ -305,7 +305,7 @@ def verify_chunk_indices(chunks: List[Chunk], original_text: str):
         )
 
 
-def test_token_chunker_indices(sample_text):
+def test_token_chunker_indices(tiktokenizer, sample_text):
     """Test that TokenChunker's indices correctly map to original text."""
     tokenizer = Tokenizer.from_pretrained("gpt2")
     chunker = TokenChunker(tokenizer=tokenizer, chunk_size=512, chunk_overlap=128)
@@ -321,21 +321,28 @@ def test_token_chunker_indices_complex_md(sample_complex_markdown_text):
     verify_chunk_indices(chunks, sample_complex_markdown_text)
 
 
-def test_token_chunker_token_counts(tokenizer, sample_text):
+def test_token_chunker_token_counts(tiktokenizer, sample_text):
     """Test that the TokenChunker correctly calculates token counts."""
-    chunker = TokenChunker(tokenizer=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = TokenChunker(tokenizer=tiktokenizer, chunk_size=512, chunk_overlap=128)
     chunks = chunker.chunk(sample_text)
     assert all([chunk.token_count > 0 for chunk in chunks]), "All chunks must have a positive token count"
     assert all([chunk.token_count <= 512 for chunk in chunks]), "All chunks must have a token count less than or equal to 512"  
 
-    token_counts = [len(tokenizer.encode(chunk.text)) for chunk in chunks]
+    token_counts = [len(tiktokenizer.encode(chunk.text)) for chunk in chunks]
     assert all([chunk.token_count == token_count for chunk, token_count in zip(chunks, token_counts)]), "All chunks must have a token count equal to the length of the encoded text"
 
-def test_token_chunker_indices_batch(tokenizer, sample_text):
+def test_token_chunker_indices_batch(tiktokenizer, sample_text):
     """Test that TokenChunker's indices correctly map to original text."""
-    chunker = TokenChunker(tokenizer=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = TokenChunker(tokenizer=tiktokenizer, chunk_size=512, chunk_overlap=128)
     chunks = chunker.chunk_batch([sample_text]*10)[-1]
     verify_chunk_indices(chunks, sample_text)
+
+def test_token_chunker_return_type(tiktokenizer, sample_text):
+    """Test that TokenChunker's return type is correctly set."""
+    chunker = TokenChunker(tokenizer=tiktokenizer, chunk_size=512, chunk_overlap=128, return_type="texts")
+    chunks = chunker.chunk(sample_text)
+    assert all([type(chunk) is str for chunk in chunks])
+    assert all([len(tiktokenizer.encode(chunk)) <= 512 for chunk in chunks])
 
 if __name__ == "__main__":
     pytest.main()

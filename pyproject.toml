@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chonkie"
-version = "0.4.0"
+version = "0.4.1"
 description = "🦛 CHONK your texts with Chonkie ✨ - The no-nonsense RAG chunking library"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -38,14 +38,14 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/bhavnicksm/chonkie"
 Documentation = "https://docs.chonkie.ai"
+
 [project.optional-dependencies]
-model2vec = ["model2vec>=0.1.0", "numpy>=1.23.0, <2.2"]
+model2vec = ["model2vec>=0.3.0", "numpy>=1.23.0, <2.2"]
 st = ["sentence-transformers>=3.0.0", "numpy>=1.23.0, <2.2"]
 openai = ["openai>=1.0.0", "numpy>=1.23.0, <2.2"]
 semantic = ["model2vec>=0.1.0", "numpy>=1.23.0, <2.2"]
 litellm = ["litellm>=1.57.10", "numpy>=1.23.0, <2.2"]
-
-all = ["sentence-transformers>=3.0.0", "numpy>=1.23.0, <2.2", "openai>=1.0.0", "model2vec>=0.1.0", "litellm>=1.57.10"]
+all = ["sentence-transformers>=3.0.0", "numpy>=1.23.0, <2.2", "openai>=1.0.0", "model2vec>=0.3.0", "litellm>=1.57.10"]
 dev = [
     "pytest>=6.2.0", 
     "pytest-cov>=4.0.0",

@@ -102,6 +102,9 @@ class LateChunker(BaseChunker):
         # for the semantic meaning to be calculated properly
         super().__init__(self.embedding_model.get_tokenizer_or_token_counter())
 
+        # Remove the multiprocessing flag from the base class
+        self._use_multiprocessing = False
+
     def _create_token_chunks(self,
                             chunk_texts: List[str],
                             token_counts: List[int],
