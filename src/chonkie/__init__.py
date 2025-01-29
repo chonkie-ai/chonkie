@@ -16,6 +16,7 @@ from .embeddings import (
     Model2VecEmbeddings,
     OpenAIEmbeddings,
     SentenceTransformerEmbeddings,
+    LiteLLMEmbeddings,
 )
 from .refinery import (
     BaseRefinery,
@@ -78,6 +79,7 @@ __all__ += [
     "SentenceTransformerEmbeddings",
     "OpenAIEmbeddings",
     "AutoEmbeddings",
+    "LiteLLMEmbeddings",
 ]
 
 # Add all refinery classes to __all__

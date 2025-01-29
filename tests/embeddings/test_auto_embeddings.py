@@ -7,6 +7,7 @@ from chonkie.embeddings.model2vec import Model2VecEmbeddings
 from chonkie.embeddings.openai import OpenAIEmbeddings
 from chonkie.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 
+from chonkie.embeddings.litellm import LiteLLMEmbeddings
 
 @pytest.fixture
 def model2vec_identifier():
@@ -31,6 +32,10 @@ def openai_identifier():
     """Fixture providing an OpenAI identifier."""
     return "text-embedding-3-small"
 
+@pytest.fixture
+def litellm_identifier():
+    """Fixture providing an LiteLLM identifier."""
+    return "huggingface/microsoft/codebert-base"
 
 @pytest.fixture
 def invalid_identifier():
@@ -68,6 +73,14 @@ def test_auto_embeddings_openai(openai_identifier):
     )
     assert isinstance(embeddings, OpenAIEmbeddings)
     assert embeddings.model == openai_identifier
+
+def test_auto_embeddings_litellm(litellm_identifier):
+    """Test that the AutoEmbeddings class can get LiteLLM embeddings."""
+    embeddings = AutoEmbeddings.get_embeddings(
+        litellm_identifier, api_key="your_litellm_api_key"
+    )
+    assert isinstance(embeddings, LiteLLMEmbeddings)
+    assert embeddings.model == litellm_identifier
 
 
 def test_auto_embeddings_invalid_identifier(invalid_identifier):
