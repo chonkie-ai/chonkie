@@ -59,7 +59,12 @@ class RecursiveChunker(BaseChunker):
         # At every delimiter, replace it with the sep   
         if rule.delimiters:
             for delimiter in rule.delimiters:
-                text = text.replace(delimiter, delimiter + sep)
+                if rule.include_delim == "prev":
+                    text = text.replace(delimiter, delimiter + sep)
+                elif rule.include_delim == "next":
+                    text = text.replace(delimiter, sep + delimiter)
+                else:
+                    text = text.replace(delimiter, sep)
 
             # Split the text at the sep
             splits = [s for s in text.split(sep) if s != ""]
