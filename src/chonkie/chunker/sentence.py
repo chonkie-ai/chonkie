@@ -19,6 +19,7 @@ class SentenceChunker(BaseChunker):
         min_characters_per_sentence: Minimum number of characters per sentence
         approximate: Whether to use approximate token counting (defaults to True)
         delim: Delimiters to split sentences on
+        include_delim: Whether to include delimiters in current chunk, next chunk or not at all (defaults to "prev")
         return_type: Whether to return chunks or texts
 
     Raises:
@@ -30,11 +31,12 @@ class SentenceChunker(BaseChunker):
         self,
         tokenizer_or_token_counter: Union[str, Callable, Any] = "gpt2",
         chunk_size: int = 512,
-        chunk_overlap: int = 128,
+        chunk_overlap: int = 0,
         min_sentences_per_chunk: int = 1,
         min_characters_per_sentence: int = 12,
         approximate: bool = True,
         delim: Union[str, List[str]] = [".", "!", "?", "\n"],
+        include_delim: Union[Literal["prev", "next"], None] = "prev",
         return_type: Literal["chunks", "texts"] = "chunks"
     ):
         """Initialize the SentenceChunker with configuration parameters.
@@ -42,14 +44,15 @@ class SentenceChunker(BaseChunker):
         SentenceChunker splits the sentences in a text based on token limits and sentence boundaries.
 
         Args:
-            tokenizer_or_token_counter: The tokenizer instance to use for encoding/decoding
-            chunk_size: Maximum number of tokens per chunk
-            chunk_overlap: Number of tokens to overlap between chunks
+            tokenizer_or_token_counter: The tokenizer instance to use for encoding/decoding (defaults to "gpt2")
+            chunk_size: Maximum number of tokens per chunk (defaults to 512)
+            chunk_overlap: Number of tokens to overlap between chunks (defaults to 0)
             min_sentences_per_chunk: Minimum number of sentences per chunk (defaults to 1)
-            min_characters_per_sentence: Minimum number of characters per sentence
+            min_characters_per_sentence: Minimum number of characters per sentence (defaults to 12)
             approximate: Whether to use approximate token counting (defaults to True)
-            delim: Delimiters to split sentences on
-            return_type: Whether to return chunks or texts
+            delim: Delimiters to split sentences on (defaults to [".", "!", "?", "newline"])
+            include_delim: Whether to include delimiters in current chunk, next chunk or not at all (defaults to "prev")
+            return_type: Whether to return chunks or texts (defaults to "chunks")
 
         Raises:
             ValueError: If parameters are invalid
@@ -65,6 +68,10 @@ class SentenceChunker(BaseChunker):
             raise ValueError("min_sentences_per_chunk must be at least 1")
         if min_characters_per_sentence < 1:
             raise ValueError("min_characters_per_sentence must be at least 1")
+        if delim is None:
+            raise ValueError("delim must be a list of strings or a string")
+        if include_delim not in ["prev", "next", None]:
+            raise ValueError("include_delim must be 'prev', 'next' or None")
         if return_type not in ["chunks", "texts"]:
             raise ValueError("Invalid return_type. Must be either 'chunks' or 'texts'.")
 
@@ -74,87 +81,9 @@ class SentenceChunker(BaseChunker):
         self.min_characters_per_sentence = min_characters_per_sentence
         self.approximate = approximate
         self.delim = delim
+        self.include_delim = include_delim
         self.sep = "🦛"
         self.return_type = return_type
-
-    # TODO: This is a older method of sentence splitting that uses Regex
-    # but since Regex in python via re is super slooooow we use a different method
-    # that is faster and more accurate. We can keep this method for reference
-    # and comparison. And also, we'll need to have a seperate preprocessing
-    # to handle the special cases that this method handles.
-
-    # def _split_sentences(self, text: str) -> List[str]:
-    #     """Split text into sentences using enhanced regex patterns.
-
-    #     Handles various cases including:
-    #     - Standard sentence endings across multiple writing systems
-    #     - Quotations and parentheses
-    #     - Common abbreviations
-    #     - Decimal numbers
-    #     - Ellipsis
-    #     - Lists and enumerations
-    #     - Special punctuation
-    #     - Common honorifics and titles
-
-    #     Args:
-    #         text: Input text to be split into sentences
-
-    #     Returns:
-    #         List of sentences
-    #     """
-    #     # Define sentence ending punctuation marks from various writing systems
-    #     sent_endings = (
-    #         r'[!.?։؟۔܀܁܂߹।॥၊။።፧፨᙮᜵᜶᠃᠉᥄᥅᪨᪩᪪᪫᭚᭛᭞᭟᰻᰼᱾᱿'
-    #         r'‼‽⁇⁈⁉⸮⸼꓿꘎꘏꛳꛷꡶꡷꣎꣏꤯꧈꧉꩝꩞꩟꫰꫱꯫﹒﹖﹗！．？𐩖𐩗'
-    #         r'𑁇𑁈𑂾𑂿𑃀𑃁𑅁𑅂𑅃𑇅𑇆𑇍𑇞𑇟𑈸𑈹𑈻𑈼𑊩𑑋𑑌𑗂𑗃𑗉𑗊𑗋𑗌𑗍𑗎𑗏𑗐𑗑𑗒'
-    #         r'𑗓𑗔𑗕𑗖𑗗𑙁𑙂𑜼𑜽𑜾𑩂𑩃𑪛𑪜𑱁𑱂𖩮𖩯𖫵𖬷𖬸𖭄𛲟𝪈｡。]'
-    #     )
-
-    #     # Common abbreviations and titles that don't end sentences
-    #     abbrevs = (
-    #         r"(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|vs|etc|viz|al|Gen|Col|Fig|Lt|Mt|St"
-    #         r"|etc|approx|appt|apt|dept|est|min|max|misc|no|ps|seq|temp|etal"
-    #         r"|e\.g|i\.e|vol|vs|cm|mm|km|kg|lb|ft|pd|hr|sec|min|sq|fx|Feb|Mar"
-    #         r"|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)"
-    #     )
-
-    #     # First, protect periods in known abbreviations
-    #     text = re.sub(rf"({abbrevs})\.", r"\1@POINT@", text, flags=re.IGNORECASE)
-
-    #     # Protect decimal numbers
-    #     text = re.sub(r"(\d+)\.(\d+)", r"\1@POINT@\2", text)
-
-    #     # Protect ellipsis
-    #     text = re.sub(r"\.\.\.", "@ELLIPSIS@", text)
-
-    #     # Protect email addresses and websites
-    #     text = re.sub(r"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})", r"@EMAIL@\1@EMAIL@", text)
-    #     text = re.sub(r"(https?://[^\s]+)", r"@URL@\1@URL@", text)
-
-    #     # Handle parentheses and brackets
-    #     text = re.sub(r'\([^)]*\.[^)]*\)', lambda m: m.group().replace('.', '@POINT@'), text)
-    #     text = re.sub(r'\[[^\]]*\.[^\]]*\]', lambda m: m.group().replace('.', '@POINT@'), text)
-
-    #     # Handle quotations with sentence endings
-    #     text = re.sub(rf'({sent_endings})"(\s+[A-Z])', r'\1"\n\2', text)
-
-    #     # Handle standard sentence endings
-    #     text = re.sub(rf'({sent_endings})(\s+[A-Z"]|\s*$)', r'\1\n\2', text)
-
-    #     # Handle lists and enumerations
-    #     text = re.sub(r'(\d+\.)(\s+[A-Z])', r'\1\n\2', text)
-    #     text = re.sub(r'([a-zA-Z]\.)(\s+[A-Z])', r'\1\n\2', text)
-
-    #     # Restore protected periods and symbols
-    #     text = text.replace("@POINT@", ".")
-    #     text = text.replace("@ELLIPSIS@", "...")
-    #     text = re.sub(r'@EMAIL@([^@]+)@EMAIL@', r'\1', text)
-    #     text = re.sub(r'@URL@([^@]+)@URL@', r'\1', text)
-
-    #     # Split into sentences
-    #     sentences = [s.strip() for s in text.split('\n') if s.strip()]
-
-    #     return sentences
 
     def _split_sentences(self, text: str) -> List[str]:
         """Fast sentence splitting while maintaining accuracy.
@@ -170,16 +99,21 @@ class SentenceChunker(BaseChunker):
         """
         t = text
         for c in self.delim:
-            t = t.replace(c, c + self.sep)
+            if self.include_delim == "prev":
+                t = t.replace(c,  c + self.sep)
+            elif self.include_delim == "next":
+                t = t.replace(c, self.sep + c)
+            else:
+                t = t.replace(c, self.sep)
 
         # Initial split
         splits = [s for s in t.split(self.sep) if s != ""]
-        # print(splits)
 
         # Combine short splits with previous sentence
         sentences = []
         current = ""
 
+        # Combine short splits with previous sentence
         for s in splits:
             if len(s.strip()) < self.min_characters_per_sentence:
                 current += s
@@ -188,6 +122,7 @@ class SentenceChunker(BaseChunker):
                     sentences.append(current)
                 current = s
 
+        # Add last sentence
         if current:
             sentences.append(current)
 
