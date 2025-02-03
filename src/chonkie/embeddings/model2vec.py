@@ -1,13 +1,17 @@
-import importlib.util
+"""Model2Vec embeddings."""
+import importlib.util as importutil
 from typing import TYPE_CHECKING, List, Union
-
-import numpy as np
 
 from chonkie.embeddings.base import BaseEmbeddings
 
 if TYPE_CHECKING:
+    import numpy as np
     from model2vec import StaticModel
 
+# import numpy and model2vec only if they are available
+if importutil.find_spec("model2vec"):
+    import numpy as np
+    from model2vec import StaticModel
 
 class Model2VecEmbeddings(BaseEmbeddings):
     """Class for model2vec embeddings.
@@ -25,10 +29,10 @@ class Model2VecEmbeddings(BaseEmbeddings):
     ) -> None:
         """Initialize Model2VecEmbeddings with a str or StaticModel instance."""
         if not self.is_available():
-            raise ImportError("model2vec is not available. Please install it via pip.")
+            raise ImportError("model2vec is not available. Please install it via `pip install chonkie[model2vec]`")
         else:
-            # Initialize model2vec only if it's available
-            global StaticModel
+            global StaticModel, np
+            import numpy as np
             from model2vec import StaticModel
 
         if isinstance(model, str):
@@ -67,7 +71,7 @@ class Model2VecEmbeddings(BaseEmbeddings):
         encodings = self.model.tokenizer.encode_batch(texts)
         return [len(enc) for enc in encodings]
 
-    def similarity(self, u: "np.ndarray", v: "np.ndarray") -> np.float32:
+    def similarity(self, u: "np.ndarray", v: "np.ndarray") -> "np.float32":
         """Compute cosine similarity of two embeddings."""
         return np.divide(
             np.dot(u, v), np.linalg.norm(u) * np.linalg.norm(v), dtype=np.float32
@@ -80,7 +84,7 @@ class Model2VecEmbeddings(BaseEmbeddings):
     @classmethod
     def is_available(cls) -> bool:
         """Check if model2vec is available."""
-        return importlib.util.find_spec("model2vec") is not None
+        return importutil.find_spec("model2vec") is not None
 
     def __repr__(self) -> str:
         """Representation of the Model2VecEmbeddings instance."""

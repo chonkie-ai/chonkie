@@ -1,3 +1,5 @@
+"""Base class for all embeddings implementations."""
+import importlib.util as importutil
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, List, Union
 
@@ -5,6 +7,8 @@ from typing import TYPE_CHECKING, Any, Callable, List, Union
 if TYPE_CHECKING:
     import numpy as np
 
+if importutil.find_spec("numpy"):
+    import numpy as np
 
 class BaseEmbeddings(ABC):
     """Abstract base class for all embeddings implementations.

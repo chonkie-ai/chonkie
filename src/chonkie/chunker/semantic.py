@@ -1,14 +1,15 @@
 """Semantic chunking using sentence embeddings."""
 
+import importlib.util as importutil
 import warnings
-from typing import List, Union
-
-import numpy as np
+from typing import List, Literal, Union
 
 from chonkie.chunker.base import BaseChunker
 from chonkie.embeddings.base import BaseEmbeddings
 from chonkie.types import SemanticChunk, SemanticSentence, Sentence
 
+if importutil.find_spec("numpy"):
+    import numpy as np
 
 class SemanticChunker(BaseChunker):
     """Chunker that splits text into semantically coherent chunks using embeddings.
@@ -24,7 +25,11 @@ class SemanticChunker(BaseChunker):
         min_chunk_size: Minimum number of tokens per sentence (defaults to 2)
         threshold_step: Step size for similarity threshold calculation
         delim: Delimiters to split sentences on
+        return_type: Whether to return chunks or texts
     
+    Raises:
+        ValueError: If parameters are invalid
+
     """
 
     def __init__(
@@ -39,6 +44,7 @@ class SemanticChunker(BaseChunker):
         min_characters_per_sentence: int = 12,
         threshold_step: float = 0.01,
         delim: Union[str, List[str]] = [".", "!", "?", "\n"],
+        return_type: Literal["chunks", "texts"] = "chunks",
         **kwargs
     ):
         """Initialize the SemanticChunker.
@@ -56,6 +62,7 @@ class SemanticChunker(BaseChunker):
             min_chunk_size: Minimum number of tokens per chunk (and sentence, defaults to 2)
             threshold_step: Step size for similarity threshold calculation
             delim: Delimiters to split sentences on
+            return_type: Whether to return chunks or texts
             **kwargs: Additional keyword arguments
 
         Raises:
@@ -85,6 +92,8 @@ class SemanticChunker(BaseChunker):
             raise ValueError("threshold (float) must be between 0 and 1")
         elif type(threshold) == int and (threshold < 1 or threshold > 100):
             raise ValueError("threshold (int) must be between 1 and 100")
+        if return_type not in ["chunks", "texts"]:
+            raise ValueError("Invalid return_type. Must be either 'chunks' or 'texts'.")
 
         self.mode = mode
         self.chunk_size = chunk_size
@@ -96,6 +105,7 @@ class SemanticChunker(BaseChunker):
         self.threshold_step = threshold_step
         self.delim = delim
         self.sep = "🦛"
+        self.return_type = return_type
         
         if isinstance(threshold, float):
             self.similarity_threshold = threshold
@@ -115,13 +125,13 @@ class SemanticChunker(BaseChunker):
             self.embedding_model = AutoEmbeddings.get_embeddings(embedding_model, **kwargs)
         else:
             raise ValueError(
-                "embedding_model must be a string or BaseEmbeddings instance"
+                f"{embedding_model} is not a valid embedding model"
             )
 
         # Probably the dependency is not installed
         if self.embedding_model is None:
             raise ImportError(
-                "embedding_model is not a valid embedding model",
+                f"{embedding_model} is not a valid embedding model",
                 "Please install the `semantic` extra to use this feature",
             )
 
@@ -242,13 +252,13 @@ class SemanticChunker(BaseChunker):
         return sentences
 
     def _get_semantic_similarity(
-        self, embedding1: np.ndarray, embedding2: np.ndarray
+        self, embedding1: "np.ndarray", embedding2: "np.ndarray"
     ) -> float:
         """Compute cosine similarity between two embeddings."""
         similarity = self.embedding_model.similarity(embedding1, embedding2)
         return similarity
 
-    def _compute_group_embedding(self, sentences: List[Sentence]) -> np.ndarray:
+    def _compute_group_embedding(self, sentences: List[Sentence]) -> "np.ndarray":
         """Compute mean embedding for a group of sentences."""
         if len(sentences) == 1:
             return sentences[0].embedding
@@ -453,24 +463,27 @@ class SemanticChunker(BaseChunker):
             return self._group_sentences_window(sentences)
 
     def _create_chunk(
-        self, sentences: List[Sentence], similarity_scores: List[float] = None
+        self, sentences: List[Sentence]
     ) -> SemanticChunk:
         """Create a chunk from a list of sentences."""
         if not sentences:
             raise ValueError("Cannot create chunk from empty sentence list")
-
-        # Compute chunk text and token count from sentences
-        text = "".join(sent.text for sent in sentences)
-        token_count = sum(sent.token_count for sent in sentences)
-
-        return SemanticChunk(
-            text=text,
-            start_index=sentences[0].start_index,
-            end_index=sentences[-1].end_index,
-            token_count=token_count,
-            sentences=sentences,
-        )
-
+        if self.return_type == "chunks":
+            # Compute chunk text and token count from sentences
+            text = "".join(sent.text for sent in sentences)
+            token_count = sum(sent.token_count for sent in sentences)
+            return SemanticChunk(
+                text=text,
+                start_index=sentences[0].start_index,
+                end_index=sentences[-1].end_index,
+                token_count=token_count,
+                sentences=sentences,
+            )
+        elif self.return_type == "texts":
+            return "".join(sent.text for sent in sentences)
+        else:
+            raise ValueError("Invalid return_type. Must be either 'chunks' or 'texts'.")
+        
     def _split_chunks(
         self, sentence_groups: List[List[Sentence]]
     ) -> List[SemanticChunk]:

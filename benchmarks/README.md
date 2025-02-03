@@ -9,6 +9,7 @@ Ever wondered how much CHONKier other text splitting libraries are? Well, wonder
 > ZOOOOOM! Watch Chonkie run! 🏃‍♂️💨
 
 ### 100K Wikipedia Articles
+
 The following benchmarks were run on 100,000 Wikipedia articles from the 
 [`chonkie-ai/wikipedia-100k`](https://huggingface.co/datasets/chonkie-ai/wikipedia-100k) dataset
 
@@ -18,7 +19,7 @@ All tests were run on a Google Colab A100 instance.
 
 | Library | Time | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie | 58 sec | 1x (Im fast af boi) |
+| 🦛 Chonkie | 58 sec | 1x  |
 | 🔗 LangChain | 1 min 10 sec | 1.21x slower |
 | 📚 LlamaIndex | 50 min | 51.7x slower |
 
@@ -26,7 +27,7 @@ All tests were run on a Google Colab A100 instance.
 
 | Library | Time | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie | 59 sec | 1x (solo CHONK) |
+| 🦛 Chonkie | 59 sec | 1x |
 | 📚 LlamaIndex | 3 min 59 sec | 4.05x slower |
 | 🔗 LangChain | N/A | Doesn't exist |
 
@@ -34,7 +35,7 @@ All tests were run on a Google Colab A100 instance.
 
 | Library | Time | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie | 1 min 19 sec | 1x (🔃🔃) |
+| 🦛 Chonkie | 1 min 19 sec | 1x |
 | 🔗 LangChain | 2 min 45 sec | 2.09x slower |
 | 📚 LlamaIndex | N/A | Doesn't exist |
 
@@ -44,12 +45,13 @@ Tested with `sentence-transformers/all-minilm-l6-v2` model unless specified othe
 
 | Library | Time | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie (with default settings) | 13 min 59 sec | 1x (understanding chonk) |
+| 🦛 Chonkie (with default settings) | 13 min 59 sec | 1x |
 | 🦛 Chonkie | 1 hour 8 min min 53 sec |  4.92x slower |
 | 🔗 LangChain | 1 hour 13 sec | 4.35x slower |
 | 📚 LlamaIndex | 1 hour 24 min 15 sec| 6.07x slower |
 
 ### 500K Wikipedia Articles
+
 The following benchmarks were run on 500,000 Wikipedia articles from the 
 [`chonkie-ai/wikipedia-500k`](https://huggingface.co/datasets/chonkie-ai/wikipedia-500k) dataset
 
@@ -59,7 +61,8 @@ All tests were run on a `c3-highmem-4` VM from Google Cloud with 32 GB RAM and a
 
 | Library | Time | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie | 2 min 17 sec | 1x (Im fast af boi) |
+
+| 🦛 Chonkie | 2 min 17 sec | 1x |
 | 🔗 LangChain | 2 min 42 sec | 1.18x slower |
 | 📚 LlamaIndex | 50 min | 21.9x slower |
 
@@ -67,7 +70,7 @@ All tests were run on a `c3-highmem-4` VM from Google Cloud with 32 GB RAM and a
 
 | Library | Time | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie | 7 min 16 sec | 1x (solo CHONK) |
+| 🦛 Chonkie | 7 min 16 sec | 1x |
 | 📚 LlamaIndex | 10 min 55 sec | 1.5x slower |
 | 🔗 LangChain | N/A | Doesn't exist |
 
@@ -75,7 +78,7 @@ All tests were run on a `c3-highmem-4` VM from Google Cloud with 32 GB RAM and a
 
 | Library | Time | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie | 3 min 42 sec | 1x (🔃🔃) |
+| 🦛 Chonkie | 3 min 42 sec | 1x |
 | 🔗 LangChain | 7 min 36 sec | 2.05x slower |
 | 📚 LlamaIndex | N/A | Doesn't exist |
 
@@ -87,7 +90,7 @@ The following benchmarks were run on the Paul Graham Essays dataset using the GP
 
 | Library | Time (ms) | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie | 8.18 | 1x (fastest CHONK) |
+| 🦛 Chonkie | 8.18 | 1x |
 | 🔗 LangChain | 8.68 | 1.06x slower |
 | 📚 LlamaIndex | 272 | 33.25x slower |
 
@@ -95,7 +98,7 @@ The following benchmarks were run on the Paul Graham Essays dataset using the GP
 
 | Library | Time (ms) | Speed Factor |
 |---------|-----------|--------------|
-| 🦛 Chonkie | 52.6 | 1x (solo CHONK) |
+| 🦛 Chonkie | 52.6 | 1x |
 | 📚 LlamaIndex | 91.2 | 1.73x slower |
 | 🔗 LangChain | N/A | Doesn't exist |
 
@@ -103,7 +106,7 @@ The following benchmarks were run on the Paul Graham Essays dataset using the GP
 
 | Library | Time | Speed Factor |
 |---------|------|--------------|
-| 🦛 Chonkie | 482ms | 1x (smart CHONK) |
+| 🦛 Chonkie | 482ms | 1x |
 | 🔗 LangChain | 899ms | 1.86x slower |
 | 📚 LlamaIndex | 1.2s | 2.49x slower |
 
@@ -114,7 +117,7 @@ The following benchmarks were run on the Paul Graham Essays dataset using the GP
 
 | Library | Size | Chonk Factor |
 |---------|------|--------------|
-| 🦛 Chonkie | 11.2 MiB | 1x (base CHONK) |
+| 🦛 Chonkie | 11.2 MiB | 1x |
 | 🔗 LangChain | 80 MiB | ~7.1x CHONKier |
 | 📚 LlamaIndex | 171 MiB | ~15.3x CHONKier |
 
@@ -122,19 +125,22 @@ The following benchmarks were run on the Paul Graham Essays dataset using the GP
 
 | Library | Size | Chonk Factor |
 |---------|------|--------------|
-| 🦛 Chonkie | 585 MiB | 1x (semantic CHONK) |
-| 🔗 LangChain | 625 MiB | ~1.07x CHONKier |
-| 📚 LlamaIndex | 678 MiB | ~1.16x CHONKier |
+| 🦛 Chonkie | 62 MiB | 1x |
+| 🔗 LangChain | 625 MiB | ~10x CHONKier |
+| 📚 LlamaIndex | 678 MiB | ~11x CHONKier |
+
 
 ## 💡 Why These Numbers Matter
 
 ### Speed Benefits
+
 1. **Faster Processing**: Chonkie leads in all chunking methods!
 2. **Production Ready**: Optimized for real-world usage
 3. **Consistent Performance**: Fast across all chunking types
 4. **Scale Friendly**: Process more text in less time
 
 ### Size Benefits
+
 1. **Faster Installation**: Less to download = faster to get started
 2. **Lower Memory Footprint**: Lighter package = less RAM usage
 3. **Cleaner Dependencies**: Only install what you actually need

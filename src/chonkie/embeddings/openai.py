@@ -1,12 +1,18 @@
-import importlib
+"""OpenAI embeddings."""
+import importlib.util as importutil
 import os
 import warnings
-from typing import List, Optional
-
-import numpy as np
+from typing import TYPE_CHECKING, List, Optional
 
 from .base import BaseEmbeddings
 
+if TYPE_CHECKING:
+    import numpy as np
+
+if importutil.find_spec("openai"):
+    import numpy as np
+    import tiktoken
+    from openai import OpenAI
 
 class OpenAIEmbeddings(BaseEmbeddings):
     """OpenAI embeddings implementation using their API."""
@@ -44,12 +50,8 @@ class OpenAIEmbeddings(BaseEmbeddings):
         super().__init__()
         if not self.is_available():
             raise ImportError(
-                "OpenAI package is not available. Please install it via pip."
+                "OpenAI package is not available. Please install it via `pip install chonkie[openai]`"
             )
-        else:
-            global OpenAI
-            import tiktoken
-            from openai import OpenAI
 
         if model not in self.AVAILABLE_MODELS:
             raise ValueError(
@@ -75,7 +77,7 @@ class OpenAIEmbeddings(BaseEmbeddings):
                 "OpenAI API key not found. Either pass it as api_key or set OPENAI_API_KEY environment variable."
             )
 
-    def embed(self, text: str) -> np.ndarray:
+    def embed(self, text: str) -> "np.ndarray":
         """Get embeddings for a single text."""
         token_count = self.count_tokens(text)
         if token_count > 8191 and self._show_warnings:  # OpenAI's token limit
@@ -91,7 +93,7 @@ class OpenAIEmbeddings(BaseEmbeddings):
 
         return np.array(response.data[0].embedding, dtype=np.float32)
 
-    def embed_batch(self, texts: List[str]) -> List[np.ndarray]:
+    def embed_batch(self, texts: List[str]) -> List["np.ndarray"]:
         """Get embeddings for multiple texts using batched API calls."""
         if not texts:
             return []
@@ -146,7 +148,7 @@ class OpenAIEmbeddings(BaseEmbeddings):
         tokens = self._tokenizer.encode_batch(texts)
         return [len(t) for t in tokens]
 
-    def similarity(self, u: np.ndarray, v: np.ndarray) -> float:
+    def similarity(self, u: "np.ndarray", v: "np.ndarray") -> "np.float32":
         """Compute cosine similarity between two embeddings."""
         return np.divide(
             np.dot(u, v), np.linalg.norm(u) * np.linalg.norm(v), dtype=float
@@ -158,13 +160,14 @@ class OpenAIEmbeddings(BaseEmbeddings):
         return self._dimension
 
     def get_tokenizer_or_token_counter(self):
-        """Returns a tiktoken tokenizer object."""
+        """Return a tiktoken tokenizer object."""
         return self._tokenizer
 
     @classmethod
     def is_available(cls) -> bool:
         """Check if the OpenAI package is available."""
-        return importlib.util.find_spec("openai") is not None
+        return importutil.find_spec("openai") is not None
 
     def __repr__(self) -> str:
+        """Representation of the OpenAIEmbeddings instance."""
         return f"OpenAIEmbeddings(model={self.model})"
