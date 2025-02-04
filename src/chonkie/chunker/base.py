@@ -62,47 +62,41 @@ class BaseChunker(ABC):
     def _load_tokenizer(self, tokenizer_name: str):
         """Load a tokenizer based on the backend."""
         try:
-            if importlib.util.find_spec("tiktoken") is not None:
-                from tiktoken import get_encoding
+            if importlib.util.find_spec("tokenizers") is not None:
+                from tokenizers import Tokenizer
 
-                self._tokenizer_backend = "tiktoken"
-                return get_encoding(tokenizer_name)
+                self._tokenizer_backend = "tokenizers"
+                return Tokenizer.from_pretrained(tokenizer_name)
             else:
-                raise Warning("TikToken library not found. Trying autotiktokenizer.")
+                raise Warning("Tokenizers library not found. Trying tiktoken.")
         except Exception:
             try:
-                if importlib.util.find_spec("autotiktokenizer") is not None:
-                    from autotiktokenizer import AutoTikTokenizer
+                if importlib.util.find_spec("tiktoken") is not None:
+                    from tiktoken import get_encoding
 
                     self._tokenizer_backend = "tiktoken"
-                    return AutoTikTokenizer.from_pretrained(tokenizer_name)
+                    return get_encoding(tokenizer_name)
                 else:
                     raise Warning(
-                        "AutoTikTokenizer library not found. Trying tokenizers."
+                        "TikToken library not found. Trying transformers."
                     )
             except Exception:
                 try:
-                    if importlib.util.find_spec("tokenizers") is not None:
-                        from tokenizers import Tokenizer
+                    if importlib.util.find_spec("transformers") is not None:
+                        from transformers import AutoTokenizer
 
-                        self._tokenizer_backend = "tokenizers"
-                        return Tokenizer.from_pretrained(tokenizer_name)
+                        self._tokenizer_backend = "transformers"
+                        return AutoTokenizer.from_pretrained(tokenizer_name)
                     else:
-                        raise Warning(
-                            "Tokenizers library not found. Trying transformers."
+                        raise ValueError(
+                            "Tokenizer not found in the following libraries: transformers, tokenizers, tiktoken",
+                            "Please check your installations, or use a different tokenizer.",
                         )
                 except Exception:
-                    try:
-                        if importlib.util.find_spec("transformers") is not None:
-                            from transformers import AutoTokenizer
-
-                            self._tokenizer_backend = "transformers"
-                            return AutoTokenizer.from_pretrained(tokenizer_name)
-                    except Exception:
-                        raise ValueError(
-                            "Tokenizer not found in the following libraries: transformers, tokenizers, autotiktokenizer, tiktoken",
-                            "Please install one of these libraries to use the chunker.",
-                        )
+                    raise ValueError(
+                        "Tokenizer not found in the following libraries: transformers, tokenizers, tiktoken",
+                        "Please check your installations, or use a different tokenizer.",
+                    )
 
     def _get_tokenizer_counter(self) -> Callable[[str], int]:
         """Get token counter based on tokenizer backend."""

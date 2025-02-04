@@ -2,16 +2,16 @@
 from typing import List
 
 import pytest
-from autotiktokenizer import AutoTikTokenizer
 
-from chonkie.chunker.base import Chunk
-from chonkie.chunker.sentence import SentenceChunker
+from chonkie import Chunk
+from chonkie import SentenceChunker
 
+from tokenizers import Tokenizer
 
 @pytest.fixture
 def tokenizer():
     """Return a tokenizer instance."""
-    return AutoTikTokenizer.from_pretrained("gpt2")
+    return Tokenizer.from_pretrained("gpt2")
 
 
 @pytest.fixture
