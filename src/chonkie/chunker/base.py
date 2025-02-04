@@ -143,9 +143,7 @@ class BaseChunker(ABC):
     def _encode_batch(self, texts: List[str]) -> List[List[int]]:
         """Encode a batch of texts using the backend tokenizer."""
         if self._tokenizer_backend == "transformers":
-            return self.tokenizer.batch_encode_plus(texts, add_special_tokens=False)[
-                "input_ids"
-            ]
+            return self.tokenizer.batch_encode_plus(texts, add_special_tokens=False)["input_ids"]
         elif self._tokenizer_backend == "tokenizers":
             return [
                 t.ids
