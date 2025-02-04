@@ -178,5 +178,15 @@ def test_sentence_chunker_return_type(tokenizer, sample_text):
     assert all([type(chunk) is str for chunk in chunks])
     assert all([len(tokenizer.encode(chunk)) <= 512 for chunk in chunks])
 
+def test_sentence_chunker_min_sentences_per_chunk(tokenizer, sample_text):
+    """Test that SentenceChunker respects minimum sentences per chunk."""
+    # Test that the minimum sentences per chunk is respected, giving a warning otherwise!
+    sample_text = "This is a test."
+    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128, min_sentences_per_chunk=2)
+    chunks = chunker.chunk(sample_text)
+    assert len(chunks) == 1
+    assert chunks[0].text == "This is a test."
+    assert chunks[0].token_count == len(tokenizer.encode(sample_text))
+
 if __name__ == "__main__":
     pytest.main()
