@@ -42,7 +42,7 @@ Documentation = "https://docs.chonkie.ai"
 [project.optional-dependencies]
 model2vec = ["model2vec>=0.3.0", "numpy>=1.23.0, <2.2"]
 st = ["sentence-transformers>=3.0.0", "numpy>=1.23.0, <2.2"]
-openai = ["openai>=1.0.0", "numpy>=1.23.0, <2.2"]
+openai = ["tiktoken>=1.40.0", "openai>=1.0.0", "numpy>=1.23.0, <2.2"]
 semantic = ["model2vec>=0.3.0", "numpy>=1.23.0, <2.2"]
 all = ["sentence-transformers>=3.0.0", "numpy>=1.23.0, <2.2", "openai>=1.0.0", "model2vec>=0.3.0"]
 dev = [
