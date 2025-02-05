@@ -1,4 +1,5 @@
-import importlib
+"""SentenceTransformer embeddings."""
+import importlib.util as importutil
 from typing import TYPE_CHECKING, List, Union
 
 from chonkie.embeddings.base import BaseEmbeddings
@@ -7,6 +8,9 @@ if TYPE_CHECKING:
     import numpy as np
     from sentence_transformers import SentenceTransformer
 
+if importutil.find_spec("sentence_transformers"):
+    import numpy as np
+    from sentence_transformers import SentenceTransformer
 
 class SentenceTransformerEmbeddings(BaseEmbeddings):
     """Class for SentenceTransformer embeddings.
@@ -141,7 +145,7 @@ class SentenceTransformerEmbeddings(BaseEmbeddings):
     @classmethod
     def is_available(cls) -> bool:
         """Check if sentence-transformers is available."""
-        return importlib.util.find_spec("sentence_transformers") is not None
+        return importutil.find_spec("sentence_transformers") is not None
 
     def __repr__(self):
         """Representation of the SentenceTransformerEmbeddings instance."""

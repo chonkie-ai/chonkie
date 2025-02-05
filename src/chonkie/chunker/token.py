@@ -1,6 +1,6 @@
 """Token-based chunking."""
 
-from typing import Any, Generator, List, Tuple, Union, Literal
+from typing import Any, Generator, List, Literal, Union
 
 from tqdm import trange
 

@@ -3,7 +3,7 @@ name: ✨ Feature Request
 about: Suggest a new feature for Chonkie
 title: "[FEAT] "
 labels: enhancement
-assignees: bhavnicksm
+assignees: bhavnicksm, shreyashnigam
 
 ---
 

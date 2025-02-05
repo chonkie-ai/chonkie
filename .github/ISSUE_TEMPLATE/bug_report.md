@@ -3,7 +3,7 @@ name: 🐛 Bug Report
 about: Report a bug in Chonkie
 title: "[BUG] "
 labels: bug
-assignees: bhavnicksm
+assignees: bhavnicksm, shreyashnigam
 
 ---
 

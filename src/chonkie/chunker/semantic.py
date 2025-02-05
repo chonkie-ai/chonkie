@@ -1,14 +1,15 @@
 """Semantic chunking using sentence embeddings."""
 
+import importlib.util as importutil
 import warnings
-from typing import List, Union, Literal
-
-import numpy as np
+from typing import List, Literal, Union
 
 from chonkie.chunker.base import BaseChunker
 from chonkie.embeddings.base import BaseEmbeddings
 from chonkie.types import SemanticChunk, SemanticSentence, Sentence
 
+if importutil.find_spec("numpy"):
+    import numpy as np
 
 class SemanticChunker(BaseChunker):
     """Chunker that splits text into semantically coherent chunks using embeddings.
@@ -28,6 +29,7 @@ class SemanticChunker(BaseChunker):
     
     Raises:
         ValueError: If parameters are invalid
+
     """
 
     def __init__(
@@ -250,13 +252,13 @@ class SemanticChunker(BaseChunker):
         return sentences
 
     def _get_semantic_similarity(
-        self, embedding1: np.ndarray, embedding2: np.ndarray
+        self, embedding1: "np.ndarray", embedding2: "np.ndarray"
     ) -> float:
         """Compute cosine similarity between two embeddings."""
         similarity = self.embedding_model.similarity(embedding1, embedding2)
         return similarity
 
-    def _compute_group_embedding(self, sentences: List[Sentence]) -> np.ndarray:
+    def _compute_group_embedding(self, sentences: List[Sentence]) -> "np.ndarray":
         """Compute mean embedding for a group of sentences."""
         if len(sentences) == 1:
             return sentences[0].embedding

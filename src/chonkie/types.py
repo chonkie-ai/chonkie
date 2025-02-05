@@ -1,7 +1,7 @@
 """Dataclasses for Chonkie."""
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, List, Literal, Optional, Union
 
 if TYPE_CHECKING:
     import numpy as np
@@ -248,6 +248,7 @@ class RecursiveLevel:
 
     delimiters: Union[List[str], str, None] = None
     whitespace: bool = False
+    include_delim: Union[Literal["prev", "next", None], None] = "prev"
 
     def __post_init__(self):
         """Post-initialize the recursive level."""
@@ -270,11 +271,9 @@ class RecursiveLevel:
                 
     def __repr__(self) -> str:
         """Get a string representation of the recursive level."""
-        return f"RecursiveLevel(delimiters={self.delimiters}, whitespace={self.whitespace})"
-    
-    def __str__(self) -> str:
-        """Get a string representation of the recursive level."""
-        return f"RecursiveLevel(delimiters={self.delimiters}, whitespace={self.whitespace})"
+        return (f"RecursiveLevel(delimiters={self.delimiters}, "
+                f"whitespace={self.whitespace}, "
+                f"include_delim={self.include_delim})")
 
 @dataclass
 class RecursiveRules: 
@@ -349,11 +348,6 @@ class RecursiveRules:
     def __repr__(self) -> str:
         """Get a string representation of the recursive rules."""
         return f"RecursiveRules(levels={self.levels})"
-    
-    def __str__(self) -> str:
-        """Get a string representation of the recursive rules."""
-        return f"RecursiveRules(levels={self.levels})"
-
 
 @dataclass
 class RecursiveChunk(Chunk):
