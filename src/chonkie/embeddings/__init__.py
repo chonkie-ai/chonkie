@@ -3,6 +3,7 @@ from .base import BaseEmbeddings
 from .model2vec import Model2VecEmbeddings
 from .openai import OpenAIEmbeddings
 from .sentence_transformer import SentenceTransformerEmbeddings
+from .ollama import OllamaEmbeddings
 
 # Add all embeddings classes to __all__
 __all__ = [
@@ -11,4 +12,5 @@ __all__ = [
     "SentenceTransformerEmbeddings",
     "OpenAIEmbeddings",
     "AutoEmbeddings",
+    "OllamaEmbeddings"
 ]
