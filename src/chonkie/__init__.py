@@ -15,6 +15,7 @@ from .embeddings import (
     BaseEmbeddings,
     Model2VecEmbeddings,
     OpenAIEmbeddings,
+    OllamaEmbeddings,
     SentenceTransformerEmbeddings,
     CohereEmbeddings,
 )
@@ -87,6 +88,7 @@ __all__ += [
     "SentenceTransformerEmbeddings",
     "OpenAIEmbeddings",
     "CohereEmbeddings",
+    "OllamaEmbeddings",
     "AutoEmbeddings",
 ]
 
