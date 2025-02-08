@@ -7,6 +7,7 @@ from chonkie import AutoEmbeddings
 from chonkie.embeddings.model2vec import Model2VecEmbeddings
 from chonkie.embeddings.openai import OpenAIEmbeddings
 from chonkie.embeddings.sentence_transformer import SentenceTransformerEmbeddings
+from chonkie.embeddings.cohere import CohereEmbeddings
 from chonkie.embeddings.ollama import OllamaEmbeddings
 
 
@@ -32,6 +33,12 @@ def sentence_transformer_identifier_small():
 def openai_identifier():
     """Fixture providing an OpenAI identifier."""
     return "text-embedding-3-small"
+
+
+@pytest.fixture
+def cohere_identifier():
+    """Fixture providing an Cohere identifier."""
+    return "embed-english-light-v3.0"
 
 
 @pytest.fixture
@@ -78,6 +85,15 @@ def test_auto_embeddings_openai(openai_identifier):
     assert embeddings.model == openai_identifier
 
 
+def test_auto_embeddings_cohere(cohere_identifier):
+    """Test that the AutoEmbeddings class can get Cohere embeddings."""
+    embeddings = AutoEmbeddings.get_embeddings(
+        cohere_identifier, api_key="your_cohere_api_key"
+    )
+    assert isinstance(embeddings, CohereEmbeddings)
+    assert embeddings.model == cohere_identifier
+    
+    
 @pytest.mark.skipif(
     "OLLAMA_ENDPOINT" not in os.environ,
     reason="Skipping test because OLLAMA_ENDPOINT is not defined",

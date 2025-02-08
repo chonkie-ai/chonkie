@@ -17,11 +17,13 @@ from .embeddings import (
     OpenAIEmbeddings,
     OllamaEmbeddings,
     SentenceTransformerEmbeddings,
+    CohereEmbeddings,
 )
 from .refinery import (
     BaseRefinery,
     OverlapRefinery,
 )
+from .tokenizer import CharacterTokenizer, Tokenizer, WordTokenizer
 from .types import (
     Chunk,
     Context,
@@ -60,6 +62,13 @@ __all__ += [
     "LateChunk",
 ]
 
+# Add all tokenizer classes to __all__
+__all__ += [
+    "Tokenizer",
+    "CharacterTokenizer",
+    "WordTokenizer",
+]
+
 # Add all chunker classes to __all__
 __all__ += [
     "BaseChunker",
@@ -78,6 +87,7 @@ __all__ += [
     "Model2VecEmbeddings",
     "SentenceTransformerEmbeddings",
     "OpenAIEmbeddings",
+    "CohereEmbeddings",
     "OllamaEmbeddings",
     "AutoEmbeddings",
 ]

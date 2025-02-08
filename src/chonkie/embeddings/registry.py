@@ -6,6 +6,7 @@ from .base import BaseEmbeddings
 from .model2vec import Model2VecEmbeddings
 from .openai import OpenAIEmbeddings
 from .sentence_transformer import SentenceTransformerEmbeddings
+from .cohere import CohereEmbeddings
 from .ollama import OllamaEmbeddings
 
 @dataclass
@@ -159,6 +160,18 @@ EmbeddingsRegistry.register(
     pattern=r"^minishlab/|^minishlab/potion-base-|^minishlab/potion-|^potion-",
     supported_types=["Model2Vec", "model2vec"],
 )
+
+# Register Cohere embeddings with pattern
+EmbeddingsRegistry.register(
+    "cohere", CohereEmbeddings, pattern=r"^cohere|^embed-"
+)
+EmbeddingsRegistry.register("embed-english-v3.0", CohereEmbeddings)
+EmbeddingsRegistry.register("embed-multilingual-v3.0", CohereEmbeddings)
+EmbeddingsRegistry.register("embed-english-light-v3.0", CohereEmbeddings)
+EmbeddingsRegistry.register("embed-multilingual-light-v3.0", CohereEmbeddings)
+EmbeddingsRegistry.register("embed-english-v2.0", CohereEmbeddings)
+EmbeddingsRegistry.register("embed-english-light-v2.0", CohereEmbeddings)
+EmbeddingsRegistry.register("embed-multilingual-v2.0", CohereEmbeddings)
 
 # Register Ollama embeddings
 EmbeddingsRegistry.register(

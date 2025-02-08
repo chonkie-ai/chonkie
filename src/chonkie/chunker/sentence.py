@@ -111,19 +111,26 @@ class SentenceChunker(BaseChunker):
         splits = [s for s in t.split(self.sep) if s != ""]
 
         # Combine short splits with previous sentence
-        sentences = []
         current = ""
-
-        # Combine short splits with previous sentence
+        sentences = []
         for s in splits:
+            # If the split is short, add to current and if long add to sentences
             if len(s) < self.min_characters_per_sentence:
                 current += s
+            elif current:
+                current += s
+                sentences.append(current)
+                current = ""
             else:
-                if current:
-                    sentences.append(current)
-                current = s
+                sentences.append(s)
+            
+            # At any point if the current sentence is longer than the min_characters_per_sentence,
+            # add it to the sentences
+            if len(current) >= self.min_characters_per_sentence:
+                sentences.append(current)
+                current = ""
 
-        # Add last sentence
+        # If there is a current split, add it to the sentences
         if current:
             sentences.append(current)
 

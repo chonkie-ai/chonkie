@@ -25,6 +25,7 @@ class SemanticChunker(BaseChunker):
         min_chunk_size: Minimum number of tokens per sentence (defaults to 2)
         threshold_step: Step size for similarity threshold calculation
         delim: Delimiters to split sentences on
+        include_delim: Whether to include the delimiters in the sentences
         return_type: Whether to return chunks or texts
     
     Raises:
@@ -44,6 +45,7 @@ class SemanticChunker(BaseChunker):
         min_characters_per_sentence: int = 12,
         threshold_step: float = 0.01,
         delim: Union[str, List[str]] = [".", "!", "?", "\n"],
+        include_delim: Union[Literal["prev", "next"], None] = "prev",
         return_type: Literal["chunks", "texts"] = "chunks",
         **kwargs
     ):
@@ -62,6 +64,7 @@ class SemanticChunker(BaseChunker):
             min_chunk_size: Minimum number of tokens per chunk (and sentence, defaults to 2)
             threshold_step: Step size for similarity threshold calculation
             delim: Delimiters to split sentences on
+            include_delim: Whether to include the delimiters in the sentences
             return_type: Whether to return chunks or texts
             **kwargs: Additional keyword arguments
 
@@ -104,6 +107,7 @@ class SemanticChunker(BaseChunker):
         self.min_characters_per_sentence = min_characters_per_sentence
         self.threshold_step = threshold_step
         self.delim = delim
+        self.include_delim = include_delim
         self.sep = "🦛"
         self.return_type = return_type
         
@@ -161,24 +165,37 @@ class SemanticChunker(BaseChunker):
         """
         t = text
         for c in self.delim:
-            t = t.replace(c, c + self.sep)
+            if self.include_delim == "prev":
+                t = t.replace(c, c + self.sep)
+            elif self.include_delim == "next":
+                t = t.replace(c, self.sep + c)
+            else:
+                t = t.replace(c, self.sep)
 
         # Initial split
         splits = [s for s in t.split(self.sep) if s != ""]
-        # print(splits)
 
         # Combine short splits with previous sentence
-        sentences = []
         current = ""
-
+        sentences = []
         for s in splits:
-            if len(s.strip()) < self.min_characters_per_sentence:
+            # If the split is short, add to current and if long add to sentences
+            if len(s) < self.min_characters_per_sentence:
                 current += s
+            elif current:
+                current += s
+                sentences.append(current)
+                current = ""
             else:
-                if current:
-                    sentences.append(current)
-                current = s
+                sentences.append(s)
+            
+            # At any point if the current sentence is longer than the min_characters_per_sentence,
+            # add it to the sentences
+            if len(current) >= self.min_characters_per_sentence:
+                sentences.append(current)
+                current = ""
 
+        # If there is a current split, add it to the sentences
         if current:
             sentences.append(current)
 
