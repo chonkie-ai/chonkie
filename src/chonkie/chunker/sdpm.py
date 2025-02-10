@@ -1,6 +1,6 @@
 """Semantic Double Pass Merge chunking using sentence embeddings."""
 
-from typing import Any, List, Union, Literal
+from typing import Any, List, Literal, Union
 
 from chonkie.types import SemanticChunk, Sentence
 

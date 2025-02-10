@@ -7,9 +7,9 @@
 [![PyPI version](https://img.shields.io/pypi/v/chonkie.svg)](https://pypi.org/project/chonkie/)
 [![License](https://img.shields.io/github/license/bhavnicksm/chonkie.svg)](https://github.com/bhavnicksm/chonkie/blob/main/LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-chonkie.ai-blue.svg)](https://docs.chonkie.ai)
-![Package size](https://img.shields.io/badge/size-11.2MB-blue)
+![Package size](https://img.shields.io/badge/size-15MB-blue)
 [![Downloads](https://static.pepy.tech/badge/chonkie)](https://pepy.tech/project/chonkie)
-[![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/nMYNVyuB5Y?style=flat)](https://discord.gg/rYYp6DC4cv)
+[![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/rYYp6DC4cv?style=flat)](https://discord.gg/rYYp6DC4cv)
 [![GitHub stars](https://img.shields.io/github/stars/bhavnicksm/chonkie.svg)](https://github.com/bhavnicksm/chonkie/stargazers)
 
 _The no-nonsense RAG chunking library that's lightweight, lightning-fast, and ready to CHONK your texts_
@@ -110,7 +110,7 @@ Here's a quick peek at how Chonkie performs:
 
 **Size**📦
 
-- **Default Install:** 11.2MB (vs 80-171MB for alternatives)
+- **Default Install:** 15MB (vs 80-171MB for alternatives)
 - **With Semantic:** Still lighter than the competition!
 
 **Speed**⚡

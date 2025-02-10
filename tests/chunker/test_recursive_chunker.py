@@ -272,3 +272,14 @@ def test_recursive_chunker_single_character(default_rules):
     assert chunks[0].start_index == 0
     assert chunks[0].end_index == 1
     assert chunks[0].level == 0
+
+def test_recursive_chunker_min_characters_per_chunk(sample_text):
+    """Test that the RecursiveChunker handles min_characters_per_chunk correctly."""
+    sample_text = "Hello!"
+    chunker = RecursiveChunker(chunk_size=512, min_characters_per_chunk=20)
+    chunks = chunker.chunk(sample_text)
+    assert len(chunks) == 1
+    assert chunks[0].text == "Hello!"
+
+if __name__ == "__main__":
+    pytest.main()

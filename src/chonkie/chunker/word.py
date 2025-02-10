@@ -1,6 +1,6 @@
 """Word-based chunker."""
 import re
-from typing import Any, List, Tuple, Union, Literal
+from typing import Any, Callable, List, Literal, Tuple, Union
 
 from chonkie.types import Chunk
 
@@ -22,7 +22,7 @@ class WordChunker(BaseChunker):
 
     def __init__(
         self,
-        tokenizer: Union[str, Any] = "gpt2",
+        tokenizer_or_token_counter: Union[str, Callable, Any] = "gpt2",
         chunk_size: int = 512,
         chunk_overlap: int = 128,
         return_type: Literal["chunks", "texts"] = "chunks"
@@ -30,7 +30,7 @@ class WordChunker(BaseChunker):
         """Initialize the WordChunker with configuration parameters.
 
         Args:
-            tokenizer: The tokenizer instance to use for encoding/decoding
+            tokenizer_or_token_counter: The tokenizer or token counter to use for encoding/decoding
             chunk_size: Maximum number of tokens per chunk
             chunk_overlap: Maximum number of tokens to overlap between chunks
             return_type: Whether to return chunks or texts
@@ -39,7 +39,7 @@ class WordChunker(BaseChunker):
             ValueError: If chunk_size <= 0 or chunk_overlap >= chunk_size or invalid return_type
 
         """
-        super().__init__(tokenizer)
+        super().__init__(tokenizer_or_token_counter=tokenizer_or_token_counter)
 
         if chunk_size <= 0:
             raise ValueError("chunk_size must be positive")
@@ -108,8 +108,7 @@ class WordChunker(BaseChunker):
         words = [
             word for word in words if word != ""
         ]  # Add space in the beginning because tokenizers usually split that differently
-        encodings = self._encode_batch(words)
-        return [len(encoding) for encoding in encodings]
+        return [self._count_tokens(word) for word in words]
 
     def chunk(self, text: str) -> List[Chunk]:
         """Split text into overlapping chunks based on words while respecting token limits.

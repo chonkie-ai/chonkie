@@ -3,7 +3,7 @@
 import importlib
 from bisect import bisect_left
 from itertools import accumulate
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Literal, Union
 
 from chonkie.embeddings import BaseEmbeddings, SentenceTransformerEmbeddings
 from chonkie.types import LateChunk, Sentence
@@ -32,6 +32,7 @@ class LateChunker(BaseChunker):
         min_sentences_per_chunk: Minimum number of sentences per chunk (defaults to 1)
         min_characters_per_sentence: Minimum number of characters per sentence (defaults to 12)
         delim: Delimiters to split sentences on
+        include_delim: Whether to include the delimiters in the sentences
         **kwargs: Additional keyword arguments to pass to the EmbeddingModel
         
     """  
@@ -44,6 +45,7 @@ class LateChunker(BaseChunker):
                  min_characters_per_sentence: int = 12,
                  approximate: bool = True,
                  delim: Union[str, List[str]] = ['.', '!', '?', '\n'],
+                 include_delim: Union[Literal["prev", "next"], None] = "prev",
                  **kwargs
                  ) -> None:
         """Initialise the LateChunker."""
@@ -67,6 +69,7 @@ class LateChunker(BaseChunker):
         self.min_characters_per_sentence = min_characters_per_sentence
         self.approximate = approximate
         self.delim = delim
+        self.include_delim = include_delim
         self.sep = '🦛'
 
         # Initialise the embeddings via AutoEmbeddings
@@ -190,24 +193,37 @@ class LateChunker(BaseChunker):
         """
         t = text
         for c in self.delim:
-            t = t.replace(c, c + self.sep)
+            if self.include_delim == "prev":
+                t = t.replace(c, c + self.sep)
+            elif self.include_delim == "next":
+                t = t.replace(c, self.sep + c)
+            else:
+                t = t.replace(c, self.sep)
 
         # Initial split
         splits = [s for s in t.split(self.sep) if s != ""]
         # print(splits)
 
         # Combine short splits with previous sentence
-        sentences = []
         current = ""
-
-        for s in splits:
-            if len(s.strip()) < self.min_characters_per_sentence:
-                current += s
+        sentences = []
+        for split in splits:
+            if len(split) < self.min_characters_per_sentence:
+                current += split
+            elif current:
+                current += split
+                sentences.append(current)
+                current = ""
             else:
-                if current:
-                    sentences.append(current)
-                current = s
+                sentences.append(split)
+            
+            # At any point if the current sentence is longer than the min_characters_per_sentence,
+            # add it to the sentences
+            if len(current) >= self.min_characters_per_sentence:
+                sentences.append(current)
+                current = ""
 
+        # If there is a current split, add it to the sentences
         if current:
             sentences.append(current)
 

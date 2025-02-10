@@ -2,7 +2,7 @@
 from bisect import bisect_left
 from functools import lru_cache
 from itertools import accumulate
-from typing import Any, List, Optional, Union, Literal
+from typing import Any, Callable, List, Literal, Optional, Union
 
 from chonkie.chunker.base import BaseChunker
 from chonkie.types import Chunk, RecursiveChunk, RecursiveLevel, RecursiveRules
@@ -18,26 +18,26 @@ class RecursiveChunker(BaseChunker):
     """
 
     def __init__(self,
-                 tokenizer: Union[str, Any] = "gpt2",
+                 tokenizer_or_token_counter: Union[str, Callable, Any] = "gpt2",
                  chunk_size: int = 512,
-                 rules: RecursiveRules = RecursiveRules(), 
                  min_characters_per_chunk: int = 12,
+                 rules: RecursiveRules = RecursiveRules(), 
                  return_type: Literal["chunks", "texts"] = "chunks"
                  ) -> None:
         """Initialize the recursive chunker.
 
         Args:
-            tokenizer: The tokenizer to use for encoding/decoding.
+            tokenizer_or_token_counter: The tokenizer or token counter to use for encoding/decoding.
             chunk_size: The size of the chunks to return.
-            rules: The rules to use for chunking.
             min_characters_per_chunk: The minimum number of characters per chunk.
+            rules: The rules to use for chunking.
             return_type: Whether to return chunks or texts.
         
         Raises:
             ValueError: If parameters are invalid.
 
         """
-        super().__init__(tokenizer)
+        super().__init__(tokenizer_or_token_counter=tokenizer_or_token_counter)
         
         if chunk_size <= 0:
             raise ValueError("chunk_size must be positive")
@@ -59,23 +59,40 @@ class RecursiveChunker(BaseChunker):
         # At every delimiter, replace it with the sep   
         if rule.delimiters:
             for delimiter in rule.delimiters:
-                text = text.replace(delimiter, delimiter + sep)
+                if rule.include_delim == "prev":
+                    text = text.replace(delimiter, delimiter + sep)
+                elif rule.include_delim == "next":
+                    text = text.replace(delimiter, sep + delimiter)
+                else:
+                    text = text.replace(delimiter, sep)
 
             # Split the text at the sep
             splits = [s for s in text.split(sep) if s != ""]
 
             # Usually a good idea to check if there are any splits that are too short in characters
             # and then merge them
+            current = ""
             merged_splits = []
-            for i, split in enumerate(splits):
+            for split in splits:
+                # If the split is short, add to current and if long add to merged_splits
                 if len(split) < self.min_characters_per_chunk:
-                    if merged_splits:
-                        merged_splits[-1] += split
-                    else:
-                        splits[i+1] = split + splits[i+1] # When merge splits is empty, we merge the current split with the next split
-                    continue
+                    current += split
+                elif current:
+                    current += split
+                    merged_splits.append(current)
+                    current = ""
                 else:
                     merged_splits.append(split)
+                
+                if len(current) >= self.min_characters_per_chunk:
+                    merged_splits.append(current)
+                    current = ""
+            
+            # If there is a current split, add it to the merged splits
+            if current:
+                merged_splits.append(current)
+            
+            # Assign splits to the merged splits
             splits = merged_splits
 
         elif rule.whitespace:

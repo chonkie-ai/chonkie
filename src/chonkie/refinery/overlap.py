@@ -70,11 +70,67 @@ class OverlapRefinery(BaseRefinery):
         # Set up tokenizer and counting method
         if tokenizer is not None:
             self.tokenizer = tokenizer
+            self._tokenizer_backend = self._get_tokenizer_backend()
             self.approximate = approximate
         else:
             self.approximate = True
             
         self._AVG_CHAR_PER_TOKEN = 7
+    
+    def _get_tokenizer_backend(self) -> str:
+        """Get the tokenizer backend."""
+        if "tokenizers" in str(type(self.tokenizer)):
+            return "tokenizers"
+        elif "tiktoken" in str(type(self.tokenizer)):
+            return "tiktoken"
+        elif "transformers" in str(type(self.tokenizer)):
+            return "transformers"
+        else:
+            raise ValueError(f"Unsupported tokenizer backend: {str(type(self.tokenizer))}")
+
+    def _encode(self, text: str) -> List[int]:
+        """Encode text using the tokenizer backend."""
+        if self._tokenizer_backend == "tokenizers":
+            return self.tokenizer.encode(text).ids
+        elif self._tokenizer_backend == "tiktoken":
+            return self.tokenizer.encode(text)
+        elif self._tokenizer_backend == "transformers":
+            return self.tokenizer.encode(text, add_special_tokens=False)
+        else:
+            raise ValueError(f"Unsupported tokenizer backend: {self._tokenizer_backend}")
+
+    def _decode(self, tokens: List[int]) -> str:
+        """Decode tokens using the tokenizer backend."""
+        if self._tokenizer_backend == "tokenizers":
+            return self.tokenizer.decode(tokens)
+        elif self._tokenizer_backend == "tiktoken":
+            return self.tokenizer.decode(tokens)
+        elif self._tokenizer_backend == "transformers":
+            return self.tokenizer.decode(tokens, skip_special_tokens=True)
+        else:
+            raise ValueError(f"Unsupported tokenizer backend: {self._tokenizer_backend}")
+
+    def _batch_encode(self, texts: List[str]) -> List[List[int]]:
+        """Batch encode texts using the tokenizer backend."""
+        if self._tokenizer_backend == "tokenizers":
+            return [t.ids for t in self.tokenizer.encode_batch(texts)]
+        elif self._tokenizer_backend == "tiktoken":
+            return self.tokenizer.encode_batch(texts)
+        elif self._tokenizer_backend == "transformers":
+            return self.tokenizer.batch_encode_plus(texts, add_special_tokens=False)["input_ids"]
+        else:
+            raise ValueError(f"Unsupported tokenizer backend: {self._tokenizer_backend}")
+
+    def _batch_decode(self, tokens: List[List[int]]) -> List[str]:
+        """Batch decode tokens using the tokenizer backend."""
+        if self._tokenizer_backend == "tokenizers":
+            return self.tokenizer.decode_batch(tokens)
+        elif self._tokenizer_backend == "tiktoken":
+            return self.tokenizer.decode_batch(tokens)
+        elif self._tokenizer_backend == "transformers":
+            return self.tokenizer.batch_decode(tokens, skip_special_tokens=True)
+        else:
+            raise ValueError(f"Unsupported tokenizer backend: {self._tokenizer_backend}")     
 
     def _count_tokens(self, text: str) -> int:
         """Unified token counting method."""
@@ -328,10 +384,11 @@ class OverlapRefinery(BaseRefinery):
         text_portion = chunk.text[-char_window:]
 
         # Get exact token boundaries
-        tokens = self.tokenizer.encode(text_portion)
+
+        tokens = self._encode(text_portion) #TODO: should be self._encode; need a unified tokenizer interface
         context_tokens = min(self.context_size, len(tokens))
         context_tokens_ids = tokens[-context_tokens:]
-        context_text = self.tokenizer.decode(context_tokens_ids)
+        context_text = self._decode(context_tokens_ids) #TODO: should be self._decode; need a unified tokenizer interface
 
         # Find where context text starts in chunk
         try:
@@ -420,10 +477,10 @@ class OverlapRefinery(BaseRefinery):
         text_portion = chunk.text[:char_window]
 
         # Get exact token boundaries
-        tokens = self.tokenizer.encode(text_portion)
+        tokens = self._encode(text_portion)
         context_tokens = min(self.context_size, len(tokens))
         context_tokens_ids = tokens[:context_tokens]
-        context_text = self.tokenizer.decode(context_tokens_ids)
+        context_text = self._decode(context_tokens_ids)
 
         # Find where context text starts in chunk
         try:
@@ -520,7 +577,19 @@ class OverlapRefinery(BaseRefinery):
             if self.merge_context and context:
                 refined_chunks[i].text = context.text + refined_chunks[i].text
                 refined_chunks[i].start_index = context.start_index
-                refined_chunks[i].token_count = self._count_tokens(refined_chunks[i].text)
+
+                # Update token count to include context and space
+                # Calculate new token count
+                if hasattr(self, "tokenizer") and not self.approximate:
+                    # Use exact token count if we have a tokenizer
+                    refined_chunks[i].token_count = len(
+                        self._encode(refined_chunks[i].text)
+                    )
+                else:
+                    # Otherwise use approximate by adding context tokens plus one for space
+                    refined_chunks[i].token_count = (
+                        refined_chunks[i].token_count + context.token_count
+                    )
 
         return refined_chunks
 
@@ -595,7 +664,19 @@ class OverlapRefinery(BaseRefinery):
             if self.merge_context and context:
                 refined_chunks[i].text = refined_chunks[i].text + context.text
                 refined_chunks[i].end_index = context.end_index
-                refined_chunks[i].token_count = self._count_tokens(refined_chunks[i].text)
+
+                # Update token count to include context
+                # Calculate new token count
+                if hasattr(self, "tokenizer") and not self.approximate:
+                    # Use exact token count if we have a tokenizer
+                    refined_chunks[i].token_count = len(
+                        self._encode(refined_chunks[i].text)
+                    )
+                else:
+                    # Otherwise use approximate by adding context tokens
+                    refined_chunks[i].token_count = (
+                        refined_chunks[i].token_count + context.token_count
+                    )
 
         return refined_chunks
 
