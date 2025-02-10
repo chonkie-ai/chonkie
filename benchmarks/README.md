@@ -61,6 +61,7 @@ All tests were run on a `c3-highmem-4` VM from Google Cloud with 32 GB RAM and a
 
 | Library | Time | Speed Factor |
 |---------|-----------|--------------|
+
 | 🦛 Chonkie | 2 min 17 sec | 1x |
 | 🔗 LangChain | 2 min 42 sec | 1.18x slower |
 | 📚 LlamaIndex | 50 min | 21.9x slower |
@@ -127,6 +128,7 @@ The following benchmarks were run on the Paul Graham Essays dataset using the GP
 | 🦛 Chonkie | 62 MiB | 1x |
 | 🔗 LangChain | 625 MiB | ~10x CHONKier |
 | 📚 LlamaIndex | 678 MiB | ~11x CHONKier |
+
 
 ## 💡 Why These Numbers Matter
 

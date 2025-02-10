@@ -185,6 +185,7 @@ class WordChunker(BaseChunker):
     def __repr__(self) -> str:
         """Return a string representation of the WordChunker."""
         return (
-            f"WordChunker(chunk_size={self.chunk_size}, "
+            f"WordChunker(tokenizer={self.tokenizer}, "
+            f"chunk_size={self.chunk_size}, "
             f"chunk_overlap={self.chunk_overlap})"
         )
