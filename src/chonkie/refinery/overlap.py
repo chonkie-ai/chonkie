@@ -19,12 +19,8 @@ from chonkie.types import (
 class OverlapRefinery(BaseRefinery):
     """Refinery class which adds overlap as context to chunks.
 
-    This refinery provides two methods for calculating overlap:
-    1. Exact: Uses a tokenizer to precisely determine token boundaries
-    2. Approximate: Estimates tokens based on text length ratios
-
     It can handle different types of chunks (basic Chunks, SentenceChunks,
-    and SemanticChunks) and can optionally update the chunk text to include
+    SemanticChunks, RecursiveChunks) and can optionally update the chunk text to include
     the overlap content.
     """
 
@@ -479,7 +475,8 @@ class OverlapRefinery(BaseRefinery):
     def _merge_splits(self, 
                      splits: List[str],
                      token_counts: List[int],
-                     combine_with_whitespace: bool = False) -> Tuple[List[str], List[int]]:
+                     combine_with_whitespace: bool = False, 
+                     reverse: bool = False) -> Tuple[List[str], List[int]]:
         """Merge splits based on token counts."""
         # If the number of splits and token counts does not match, raise an error
         if len(splits) != len(token_counts):
@@ -497,6 +494,10 @@ class OverlapRefinery(BaseRefinery):
             cumulative_token_counts = list(accumulate([0] + token_counts, lambda x, y: x + y))
         else:
             cumulative_token_counts = list(accumulate([0] + token_counts, lambda x, y: x + y + 1)) # Add 1 for the whitespace
+
+        if reverse:
+            splits = splits[::-1]
+            cumulative_token_counts = cumulative_token_counts[::-1]
 
         # Iterate through the splits and merge them if they are too short
 
@@ -528,6 +529,10 @@ class OverlapRefinery(BaseRefinery):
             # Update the current index
             current_index = index
 
+        if reverse:
+            merged = merged[::-1]
+            merged_token_counts = merged_token_counts[::-1]
+
         return merged, merged_token_counts
 
     def _prefix_overlap_recursive(self, 
@@ -544,17 +549,18 @@ class OverlapRefinery(BaseRefinery):
         token_counts = [self._get_token_count(split) for split in splits]
         merged, merged_token_counts = self._merge_splits(splits, 
                                                          token_counts, 
-                                                         combine_with_whitespace=False)
+                                                         combine_with_whitespace=False, 
+                                                         reverse=True)
         
         # Recursively find the overlap context for the merged splits if they are too long
-        if merged_token_counts[0] > self.context_size:
-            return self._prefix_overlap_recursive(merged[0], full_text, level + 1)
+        if merged_token_counts[-1] > self.context_size:
+            return self._prefix_overlap_recursive(merged[-1], full_text, level + 1)
         else:
-            start_index = full_text.find(merged[0])
-            end_index = start_index + len(merged[0])
+            start_index = full_text.find(merged[-1])
+            end_index = start_index + len(merged[-1])
             return Context(
-                text=merged[0],
-                token_count=merged_token_counts[0],
+                text=merged[-1],
+                token_count=merged_token_counts[-1],
                 start_index=start_index,
                 end_index=end_index,
             )
@@ -577,14 +583,14 @@ class OverlapRefinery(BaseRefinery):
                                                              token_counts, 
                                                              combine_with_whitespace=True)
         
-        if merged_token_counts[-1] > self.context_size:
-            return self._suffix_overlap_recursive(merged[-1], full_text, level + 1)
+        if merged_token_counts[0] > self.context_size:
+            return self._suffix_overlap_recursive(merged[0], full_text, level + 1)
         else:
-            start_index = full_text.find(merged[-1])
-            end_index = start_index + len(merged[-1])
+            start_index = full_text.find(merged[0])
+            end_index = start_index + len(merged[0])
             return Context(
-                text=merged[-1],
-                token_count=merged_token_counts[-1],
+                text=merged[0],
+                token_count=merged_token_counts[0],
                 start_index=start_index,
                 end_index=end_index,
             )

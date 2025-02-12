@@ -40,8 +40,6 @@ class Context:
         """Validate the Context attributes after initialization."""
         if not isinstance(self.text, str):
             raise ValueError("text must be a string")
-        if not isinstance(self.token_count, int):
-            raise ValueError("token_count must be an integer")
         if self.token_count < 0:
             raise ValueError("token_count must be non-negative")
         if (
