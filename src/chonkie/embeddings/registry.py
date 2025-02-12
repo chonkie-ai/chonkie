@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Pattern, Type, Union
 
 from .base import BaseEmbeddings
+from .cohere import CohereEmbeddings
 from .model2vec import Model2VecEmbeddings
 from .openai import OpenAIEmbeddings
 from .sentence_transformer import SentenceTransformerEmbeddings
-from .cohere import CohereEmbeddings
 
 
 @dataclass

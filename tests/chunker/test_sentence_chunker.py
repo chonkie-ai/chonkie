@@ -188,7 +188,7 @@ def test_sentence_chunker_min_sentences_per_chunk(tokenizer, sample_text):
     assert chunks[0].token_count == len(tokenizer.encode(sample_text))
 
 def test_sentence_chunker_min_characters_per_sentence(tokenizer):
-    """Test that SentenceChunker respects minimum characters per sentence and when less than min_characters_per_sentence, it is merged with the next sentence"""
+    """Test that SentenceChunker respects minimum characters per sentence and when less than min_characters_per_sentence, it is merged with the next sentence."""
     sample_text = "Hello!"
     chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, min_characters_per_sentence=20)
     chunks = chunker.chunk(sample_text)

@@ -3,10 +3,10 @@
 import pytest
 
 from chonkie import AutoEmbeddings
+from chonkie.embeddings.cohere import CohereEmbeddings
 from chonkie.embeddings.model2vec import Model2VecEmbeddings
 from chonkie.embeddings.openai import OpenAIEmbeddings
 from chonkie.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-from chonkie.embeddings.cohere import CohereEmbeddings
 
 
 @pytest.fixture

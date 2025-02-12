@@ -4,7 +4,7 @@ from typing import List
 import pytest
 
 from chonkie import SemanticChunker
-from chonkie.embeddings import Model2VecEmbeddings, OpenAIEmbeddings, CohereEmbeddings
+from chonkie.embeddings import CohereEmbeddings, Model2VecEmbeddings, OpenAIEmbeddings
 from chonkie.types import Chunk, SemanticChunk
 
 

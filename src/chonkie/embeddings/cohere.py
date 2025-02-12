@@ -7,8 +7,9 @@ import numpy as np
 
 from .base import BaseEmbeddings
 
+
 class CohereEmbeddings(BaseEmbeddings):
-    """Cohere embeddings implementation using their API"""
+    """Cohere embeddings implementation using their API."""
 
     AVAILABLE_MODELS = {
         # cohere v3.0 models
@@ -45,8 +46,8 @@ class CohereEmbeddings(BaseEmbeddings):
             timeout: timeout in seconds for API requests
             batch_size: maximum number of texts to embed in one API call (maximum allowed by Cohere is 96)
             show_warnings: whether to show warnings about token usage and truncation
-        """
 
+        """
         super().__init__()
         if not self.is_available():
             raise ImportError(
@@ -54,9 +55,9 @@ class CohereEmbeddings(BaseEmbeddings):
             )
         else:
             global cohere
-            import tokenizers
             import requests
-            from cohere import ClientV2 # using v2
+            import tokenizers
+            from cohere import ClientV2  # using v2
 
         if model not in self.AVAILABLE_MODELS:
             raise ValueError(
@@ -87,7 +88,7 @@ class CohereEmbeddings(BaseEmbeddings):
 
 
     def embed(self, text: str) -> np.ndarray:
-        """Generate embeddings for a single text"""
+        """Generate embeddings for a single text."""
         token_count = self.count_tokens(text)
         if token_count > 512 and self._show_warnings:   # Cohere models max_context_length
             warnings.warn(
@@ -175,7 +176,7 @@ class CohereEmbeddings(BaseEmbeddings):
         return len(self._tokenizer.encode(text, add_special_tokens=False))
     
     def count_tokens_batch(self, texts: List[str]) -> List[int]:
-        """Count tokens in multiple texts"""
+        """Count tokens in multiple texts."""
         tokens = self._tokenizer.encode_batch(texts, add_special_tokens=False)
         return [len(t) for t in tokens]
     
@@ -187,11 +188,11 @@ class CohereEmbeddings(BaseEmbeddings):
 
     @property
     def dimension(self) -> int:
-        """Return the embedding dimension"""
+        """Return the embedding dimension."""
         return self._dimension
     
     def get_tokenizer_or_token_counter(self):
-        """Return a tokenizers tokenizer object of the current model"""
+        """Return a tokenizers tokenizer object of the current model."""
         return self._tokenizer
     
     @classmethod

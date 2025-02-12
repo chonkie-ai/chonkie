@@ -1,7 +1,7 @@
 """A utility module for handling tokenization across different backends."""
-from collections import defaultdict
 import importlib
 import inspect
+from collections import defaultdict
 from typing import Any, Callable, Dict, List, Union
 
 

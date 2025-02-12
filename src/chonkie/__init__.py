@@ -13,10 +13,10 @@ from .chunker import (
 from .embeddings import (
     AutoEmbeddings,
     BaseEmbeddings,
+    CohereEmbeddings,
     Model2VecEmbeddings,
     OpenAIEmbeddings,
     SentenceTransformerEmbeddings,
-    CohereEmbeddings,
 )
 from .refinery import (
     BaseRefinery,

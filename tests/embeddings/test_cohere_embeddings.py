@@ -3,7 +3,8 @@ import os
 import numpy as np
 import pytest
 
-from chonkie.embeddings.cohere import CohereEmbeddings 
+from chonkie.embeddings.cohere import CohereEmbeddings
+
 
 @pytest.fixture
 def embedding_model():
