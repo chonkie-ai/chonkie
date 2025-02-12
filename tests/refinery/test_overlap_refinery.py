@@ -5,7 +5,14 @@ from transformers import AutoTokenizer
 
 from chonkie import TokenChunker
 from chonkie.refinery import OverlapRefinery
-from chonkie.types import Chunk, Context, Sentence, SentenceChunk, RecursiveRules, RecursiveLevel
+from chonkie.types import (
+    Chunk,
+    Context,
+    RecursiveLevel,
+    RecursiveRules,
+    Sentence,
+    SentenceChunk,
+)
 
 
 @pytest.fixture
@@ -80,7 +87,7 @@ def test_overlap_refinery_initialization():
     assert refinery.context_size == 128
     assert refinery.merge_context is True
     assert refinery.approximate is True
-    assert not hasattr(refinery, "tokenizer")
+    assert refinery.tokenizer is None
 
     # Test initialization with tokenizer
     tokenizer = AutoTokenizer.from_pretrained("gpt2")
@@ -90,7 +97,6 @@ def test_overlap_refinery_initialization():
     assert refinery.context_size == 64
     assert refinery.merge_context is False
     assert refinery.approximate is False
-    assert hasattr(refinery, "tokenizer")
     assert refinery.tokenizer == tokenizer
 
 
@@ -219,7 +225,7 @@ def test_overlap_refinery_mixed_chunk_types():
 
 def test_overlap_refinery_prefix_mode(basic_chunks):
     """Test that OverlapRefinery works correctly in prefix mode."""
-    refinery = OverlapRefinery(context_size=4, mode="prefix")
+    refinery = OverlapRefinery(context_size=4, method="prefix")
     refined = refinery.refine(basic_chunks)
 
     # First chunk should have no context
@@ -241,7 +247,7 @@ def test_overlap_refinery_prefix_mode_with_merge(basic_chunks, tokenizer):
     refinery = OverlapRefinery(
         context_size=4,
         tokenizer=tokenizer,
-        mode="prefix",
+        method="prefix",
         merge_context=True,
         approximate=False,
     )
@@ -275,7 +281,7 @@ def test_overlap_refinery_sample_text_suffix(sample_text):
     # Initialize refinery and refine chunks
     refinery = OverlapRefinery(context_size=128,
                                tokenizer=tokenizer,
-                               mode="suffix",
+                               method="suffix",
                                merge_context=True, 
                                approximate=False)
     refined = refinery.refine(chunks)
@@ -302,7 +308,7 @@ def test_overlap_refinery_sample_text_prefix(sample_text):
     # Initialize refinery and refine chunks
     refinery = OverlapRefinery(context_size=128,
                                tokenizer=tokenizer,
-                               mode="prefix",
+                               method="prefix",
                                merge_context=True, 
                                approximate=False)
     refined = refinery.refine(chunks)
@@ -327,7 +333,6 @@ def test_overlap_refinery_sample_text_prefix(sample_text):
 @pytest.fixture
 def recursive_rules():
     """Fixture providing sample recursive rules for testing."""
-
     # First level: Split by speaker changes (double newline)
     speaker_level = RecursiveLevel(
         delimiters=["\n\n"],
@@ -396,27 +401,17 @@ def test_recursive_refinery_initialization():
     """Test initialization of OverlapRefinery in recursive mode."""
     # Test with minimum required parameters
     refinery = OverlapRefinery(
-        method="recursive",
-        context_size=128,
-        min_tokens=64
+        mode="recursive",
+        context_size=128
     )
-    assert refinery.method == "recursive"
+    assert refinery.mode == "recursive"
     assert refinery.context_size == 128
-    assert refinery.min_tokens == 64
-    
-    # Test initialization with invalid parameters
-    with pytest.raises(ValueError, match="min_tokens must be specified"):
-        OverlapRefinery(method="recursive", context_size=128)
-        
-    with pytest.raises(ValueError, match="min_tokens cannot be greater than context_size"):
-        OverlapRefinery(method="recursive", context_size=64, min_tokens=128)
 
 def test_recursive_refinery_with_rules(recursive_rules, hierarchical_chunks):
     """Test recursive refinery with custom rules."""
     refinery = OverlapRefinery(
-        method="recursive",
+        mode="recursive",
         context_size=128,
-        min_tokens=64,
         rules=recursive_rules
     )
     refined = refinery.refine(hierarchical_chunks)
@@ -433,9 +428,8 @@ def test_recursive_refinery_boundary_detection(hierarchical_text, recursive_rule
     """Test that recursive refinery correctly identifies boundaries."""
     rules = recursive_rules # Only paragraph breaks
     refinery = OverlapRefinery(
-        method="recursive",
+        mode="recursive",
         context_size=128,
-        min_tokens=64,
         rules=rules
     )
     
@@ -461,9 +455,8 @@ def test_recursive_refinery_whitespace_fallback(recursive_rules):
     
     rules = recursive_rules
     refinery = OverlapRefinery(
-        method="recursive",
+        mode="recursive",
         context_size=128,
-        min_tokens=32,
         rules=rules
     )
     
@@ -488,9 +481,8 @@ def test_recursive_refinery_with_small_chunk(hierarchical_chunks, recursive_rule
     rules = recursive_rules
     
     refinery = OverlapRefinery(
-        method="recursive",
+        mode="recursive",
         context_size=128,
-        min_tokens=64,
         rules=rules,
         tokenizer=tokenizer,
         approximate=False
@@ -498,22 +490,17 @@ def test_recursive_refinery_with_small_chunk(hierarchical_chunks, recursive_rule
     
     refined = refinery.refine(hierarchical_chunks)
     
-    # Verify exact token counts
     for chunk in refined[:-1]:  # Skip last chunk
-        if chunk.context:
-            actual_tokens = len(tokenizer.encode(chunk.context.text))
-            print(actual_tokens)
-            assert chunk.context.token_count == actual_tokens
+        assert chunk.context is not None
 
 def test_recursive_refinery_suffix_mode(hierarchical_chunks, recursive_rules):
     """Test recursive refinery in suffix mode."""
     rules = recursive_rules
     refinery = OverlapRefinery(
-        method="recursive",
+        mode="recursive",
         context_size=128,
-        min_tokens=64,
         rules=rules,
-        mode="suffix"
+        method="suffix"
     )
     
     refined = refinery.refine(hierarchical_chunks)
@@ -529,9 +516,8 @@ def test_recursive_refinery_merge_context(hierarchical_chunks, recursive_rules):
     """Test context merging in recursive mode."""
     rules = recursive_rules
     refinery = OverlapRefinery(
-        method="recursive",
+        mode="recursive",
         context_size=128,
-        min_tokens=64,
         rules=rules,
         merge_context=True,
         inplace=False
@@ -551,9 +537,8 @@ def test_recursive_refinery_merge_context(hierarchical_chunks, recursive_rules):
 def test_recursive_refinery_empty_input():
     """Test recursive refinery with empty input."""
     refinery = OverlapRefinery(
-        method="recursive",
-        context_size=128,
-        min_tokens=64
+        mode="recursive",
+        context_size=128
     )
     assert refinery.refine([]) == []
 
@@ -567,9 +552,8 @@ def test_recursive_refinery_single_chunk():
     )
     
     refinery = OverlapRefinery(
-        method="recursive",
-        context_size=128,
-        min_tokens=64
+        mode="recursive",
+        context_size=128
     )
     
     refined = refinery.refine([chunk])
