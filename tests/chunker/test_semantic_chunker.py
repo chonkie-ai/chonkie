@@ -1,11 +1,12 @@
+"""Test the SemanticChunker class."""
+
 import os
 from typing import List
 
 import pytest
 
 from chonkie import SemanticChunker
-from chonkie.embeddings import Model2VecEmbeddings, OpenAIEmbeddings, CohereEmbeddings
-from chonkie.embeddings import Model2VecEmbeddings, OpenAIEmbeddings, OllamaEmbeddings
+from chonkie.embeddings import Model2VecEmbeddings, OpenAIEmbeddings, CohereEmbeddings, OllamaEmbeddings
 from chonkie.types import Chunk, SemanticChunk
 
 
@@ -56,11 +57,11 @@ def ollama_embedding_model():
 @pytest.fixture
 def cohere_embedding_model():
     """Fixture that returns an Cohere embedding model for testing.
-    
+
     Returns:
         CohereEmbeddings: An Cohere model initialized with 'embed-english-light-v3.0'
             and the API key from environment variables.
-            
+
     """
     api_key = os.environ.get("COHERE_API_KEY")
     return CohereEmbeddings(model="embed-english-light-v3.0", api_key=api_key)
@@ -243,9 +244,14 @@ def test_semantic_chunker_repr(embedding_model):
     )
 
     expected = (
-        "SemanticChunker(embedding_model=Model2VecEmbeddings(model_name_or_path=minishlab/potion-base-8M), "
-        "mode=window, chunk_size=512, threshold=0.5, similarity_window=1, "
-        "min_sentences=1, min_chunk_size=2)"
+        f"SemanticChunker(model={chunker.embedding_model}, "
+        f"chunk_size={chunker.chunk_size}, "
+        f"mode={chunker.mode}, "
+        f"threshold={chunker.threshold}, "
+        f"similarity_window={chunker.similarity_window}, "
+        f"min_sentences={chunker.min_sentences}, "
+        f"min_chunk_size={chunker.min_chunk_size}, "
+        f"return_type={chunker.return_type})"
     )
     assert repr(chunker) == expected
 
@@ -316,46 +322,69 @@ def test_sentence_chunker_indices_complex_md(
     chunks = chunker.chunk(sample_complex_markdown_text)
     verify_chunk_indices(chunks, sample_complex_markdown_text)
 
+
 def test_semantic_chunker_token_counts(embedding_model, sample_text):
     """Test that the SemanticChunker correctly calculates token counts."""
-    chunker = SemanticChunker(embedding_model=embedding_model, chunk_size=512, threshold=0.5)
+    chunker = SemanticChunker(
+        embedding_model=embedding_model, chunk_size=512, threshold=0.5
+    )
     chunks = chunker.chunk(sample_text)
-    assert all([chunk.token_count > 0 for chunk in chunks]), "All chunks must have a positive token count"
-    assert all([chunk.token_count <= 512 for chunk in chunks]), "All chunks must have a token count less than or equal to 512"
+    assert all([chunk.token_count > 0 for chunk in chunks]), (
+        "All chunks must have a positive token count"
+    )
+    assert all([chunk.token_count <= 512 for chunk in chunks]), (
+        "All chunks must have a token count less than or equal to 512"
+    )
 
-    token_counts = [chunker._count_tokens(chunk.text) for chunk in chunks]
+    token_counts = [chunker.tokenizer.count_tokens(chunk.text) for chunk in chunks]
     for i, (chunk, token_count) in enumerate(zip(chunks, token_counts)):
-        assert chunk.token_count == token_count, \
+        assert chunk.token_count == token_count, (
             f"Chunk {i} has a token count of {chunk.token_count} but the encoded text length is {token_count}"
+        )
 
 
 def test_semantic_chunker_reconstruction(embedding_model, sample_text):
     """Test that the SemanticChunker can reconstruct the original text."""
-    chunker = SemanticChunker(embedding_model=embedding_model, chunk_size=512, threshold=0.5)
+    chunker = SemanticChunker(
+        embedding_model=embedding_model, chunk_size=512, threshold=0.5
+    )
     chunks = chunker.chunk(sample_text)
     assert sample_text == "".join([chunk.text for chunk in chunks])
 
 
-def test_semantic_chunker_reconstruction_complex_md(embedding_model, sample_complex_markdown_text):
+def test_semantic_chunker_reconstruction_complex_md(
+    embedding_model, sample_complex_markdown_text
+):
     """Test that the SemanticChunker can reconstruct the original text."""
-    chunker = SemanticChunker(embedding_model=embedding_model, chunk_size=512, threshold=0.5)
+    chunker = SemanticChunker(
+        embedding_model=embedding_model, chunk_size=512, threshold=0.5
+    )
     chunks = chunker.chunk(sample_complex_markdown_text)
     assert sample_complex_markdown_text == "".join([chunk.text for chunk in chunks])
 
 
 def test_semantic_chunker_reconstruction_batch(embedding_model, sample_text):
     """Test that the SemanticChunker can reconstruct the original text."""
-    chunker = SemanticChunker(embedding_model=embedding_model, chunk_size=512, threshold=0.5)
-    chunks = chunker.chunk_batch([sample_text]*10)[-1]
+    chunker = SemanticChunker(
+        embedding_model=embedding_model, chunk_size=512, threshold=0.5
+    )
+    chunks = chunker.chunk_batch([sample_text] * 10)[-1]
     assert sample_text == "".join([chunk.text for chunk in chunks])
+
 
 def test_semantic_chunker_return_type(embedding_model, sample_text):
     """Test that SemanticChunker's return type is correctly set."""
-    chunker = SemanticChunker(embedding_model=embedding_model, chunk_size=512, threshold=0.5, return_type="texts")
+    chunker = SemanticChunker(
+        embedding_model=embedding_model,
+        chunk_size=512,
+        threshold=0.5,
+        return_type="texts",
+    )
     chunks = chunker.chunk(sample_text)
     tokenizer = embedding_model.get_tokenizer_or_token_counter()
     assert all([type(chunk) is str for chunk in chunks])
     assert all([len(tokenizer.encode(chunk)) <= 512 for chunk in chunks])
+
 
 if __name__ == "__main__":
     pytest.main()

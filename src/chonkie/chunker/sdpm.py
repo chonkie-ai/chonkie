@@ -8,6 +8,7 @@ from .semantic import SemanticChunker
 
 
 class SDPMChunker(SemanticChunker):
+
     """Chunker implementation using the Semantic Document Partitioning Method (SDPM).
 
     The SDPM approach involves three main steps:
@@ -45,7 +46,7 @@ class SDPMChunker(SemanticChunker):
         delim: Union[str, List[str]] = [".", "!", "?", "\n"],
         skip_window: int = 1,
         return_type: Literal["chunks", "texts"] = "chunks",
-        **kwargs
+        **kwargs,
     ):
         """Initialize the SDPMChunker.
 
@@ -77,7 +78,7 @@ class SDPMChunker(SemanticChunker):
             threshold_step=threshold_step,
             delim=delim,
             return_type=return_type,
-            **kwargs
+            **kwargs,
         )
         self.skip_window = skip_window
 

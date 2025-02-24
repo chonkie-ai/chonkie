@@ -1,5 +1,7 @@
 """Word-based chunker."""
+
 import re
+import warnings
 from typing import Any, Callable, List, Literal, Tuple, Union
 
 from chonkie.types import Chunk
@@ -8,24 +10,26 @@ from .base import BaseChunker
 
 
 class WordChunker(BaseChunker):
+
     """Chunker that splits text into overlapping chunks based on words.
 
     Args:
         tokenizer: The tokenizer instance to use for encoding/decoding
         chunk_size: Maximum number of tokens per chunk
         chunk_overlap: Maximum number of tokens to overlap between chunks
+        return_type: Whether to return chunks or texts
 
     Raises:
         ValueError: If chunk_size <= 0 or chunk_overlap >= chunk_size
-    
+
     """
 
     def __init__(
         self,
         tokenizer_or_token_counter: Union[str, Callable, Any] = "gpt2",
         chunk_size: int = 512,
-        chunk_overlap: int = 128,
-        return_type: Literal["chunks", "texts"] = "chunks"
+        chunk_overlap: int = 0,
+        return_type: Literal["chunks", "texts"] = "chunks",
     ):
         """Initialize the WordChunker with configuration parameters.
 
@@ -46,8 +50,17 @@ class WordChunker(BaseChunker):
         if chunk_overlap >= chunk_size:
             raise ValueError("chunk_overlap must be less than chunk_size")
         if return_type not in ["chunks", "texts"]:
-            raise ValueError("Invalid return_type. Must be either 'chunks' or 'texts'.")    
+            raise ValueError("Invalid return_type. Must be either 'chunks' or 'texts'.")
 
+        # Add chunk_overlap deprecation warning
+        if chunk_overlap > 0:
+            warnings.warn(
+                "chunk_overlap is getting deprecated in v0.6.0. " +
+                "🦛 Chonkie advises you to use OverlapRefinery instead which is more flexible and powerful!",
+                DeprecationWarning,
+            )
+
+        # Assign the values if they make sense
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.return_type = return_type
@@ -108,7 +121,7 @@ class WordChunker(BaseChunker):
         words = [
             word for word in words if word != ""
         ]  # Add space in the beginning because tokenizers usually split that differently
-        return [self._count_tokens(word) for word in words]
+        return [self.tokenizer.count_tokens(word) for word in words]
 
     def chunk(self, text: str) -> List[Chunk]:
         """Split text into overlapping chunks based on words while respecting token limits.
@@ -148,8 +161,7 @@ class WordChunker(BaseChunker):
                     chunks.append(chunk)
                 elif self.return_type == "texts":
                     chunks.append("".join(current_chunk))
-                
-                
+
                 # update the current_chunk and previous chunk
                 previous_chunk_length = current_chunk_length
                 current_index = chunk.end_index
@@ -185,6 +197,8 @@ class WordChunker(BaseChunker):
     def __repr__(self) -> str:
         """Return a string representation of the WordChunker."""
         return (
-            f"WordChunker(chunk_size={self.chunk_size}, "
-            f"chunk_overlap={self.chunk_overlap})"
+            f"WordChunker(tokenizer={self.tokenizer}, "
+            f"chunk_size={self.chunk_size}, "
+            f"chunk_overlap={self.chunk_overlap}, "
+            f"return_type={self.return_type})"
         )

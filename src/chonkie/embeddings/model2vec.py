@@ -1,4 +1,5 @@
 """Model2Vec embeddings."""
+
 import importlib.util as importutil
 from typing import TYPE_CHECKING, List, Union
 
@@ -13,7 +14,9 @@ if importutil.find_spec("model2vec"):
     import numpy as np
     from model2vec import StaticModel
 
+
 class Model2VecEmbeddings(BaseEmbeddings):
+
     """Class for model2vec embeddings.
 
     This class provides an interface for the model2vec library, which provides a variety
@@ -29,7 +32,9 @@ class Model2VecEmbeddings(BaseEmbeddings):
     ) -> None:
         """Initialize Model2VecEmbeddings with a str or StaticModel instance."""
         if not self.is_available():
-            raise ImportError("model2vec is not available. Please install it via `pip install chonkie[model2vec]`")
+            raise ImportError(
+                "model2vec is not available. Please install it via `pip install chonkie[model2vec]`"
+            )
         else:
             global StaticModel, np
             import numpy as np

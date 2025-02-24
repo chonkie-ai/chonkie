@@ -8,6 +8,7 @@ The tests verify:
 - Token counting
 - Similarity calculation
 """
+
 import numpy as np
 import pytest
 
@@ -15,6 +16,7 @@ from chonkie.embeddings.base import BaseEmbeddings
 
 
 class CustomEmbeddings(BaseEmbeddings):
+
     """Custom embeddings class."""
 
     def __init__(self, dimension=4):
@@ -41,11 +43,13 @@ class CustomEmbeddings(BaseEmbeddings):
         """Return the dimension of the embeddings."""
         return self._dimension
 
+
 def test_custom_embeddings_initialization():
     """Test the initialization of the CustomEmbeddings class."""
     embeddings = CustomEmbeddings(dimension=4)
     assert isinstance(embeddings, BaseEmbeddings)
     assert embeddings.dimension == 4
+
 
 def test_custom_embeddings_single_text():
     """Test the embedding of a single text string."""
@@ -53,7 +57,8 @@ def test_custom_embeddings_single_text():
     text = "Test string"
     vector = embeddings.embed(text)
     assert isinstance(vector, np.ndarray)
-    assert vector.shape == (4, )
+    assert vector.shape == (4,)
+
 
 def test_custom_embeddings_batch_text():
     """Test the embedding of a batch of text strings."""
@@ -65,6 +70,7 @@ def test_custom_embeddings_batch_text():
         assert isinstance(vec, np.ndarray)
         assert vec.shape == (4,)
 
+
 def test_custom_embeddings_token_count():
     """Test the token counting functionality."""
     embeddings = CustomEmbeddings()
@@ -72,6 +78,7 @@ def test_custom_embeddings_token_count():
     count = embeddings.count_tokens(text)
     assert isinstance(count, int)
     assert count == len(text.split())
+
 
 def test_custom_embeddings_similarity():
     """Test the similarity calculation."""
@@ -82,5 +89,6 @@ def test_custom_embeddings_similarity():
     # Cosine similarity is in [-1, 1]—random vectors often produce a small positive or negative value
     assert -1.0 <= sim <= 1.0
 
+
 if __name__ == "__main__":
-    pytest.main() 
+    pytest.main()

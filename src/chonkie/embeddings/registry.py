@@ -1,8 +1,11 @@
+"""Registry for embedding implementations with pattern matching support."""
+
 import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Pattern, Type, Union
 
 from .base import BaseEmbeddings
+from .cohere import CohereEmbeddings
 from .model2vec import Model2VecEmbeddings
 from .openai import OpenAIEmbeddings
 from .sentence_transformer import SentenceTransformerEmbeddings
@@ -11,6 +14,7 @@ from .ollama import OllamaEmbeddings
 
 @dataclass
 class RegistryEntry:
+
     """Registry entry containing the embeddings class and optional pattern."""
 
     embeddings_cls: Type[BaseEmbeddings]
@@ -19,6 +23,7 @@ class RegistryEntry:
 
 
 class EmbeddingsRegistry:
+
     """Registry for embedding implementations with pattern matching support."""
 
     _registry: Dict[str, RegistryEntry] = {}
@@ -162,9 +167,7 @@ EmbeddingsRegistry.register(
 )
 
 # Register Cohere embeddings with pattern
-EmbeddingsRegistry.register(
-    "cohere", CohereEmbeddings, pattern=r"^cohere|^embed-"
-)
+EmbeddingsRegistry.register("cohere", CohereEmbeddings, pattern=r"^cohere|^embed-")
 EmbeddingsRegistry.register("embed-english-v3.0", CohereEmbeddings)
 EmbeddingsRegistry.register("embed-multilingual-v3.0", CohereEmbeddings)
 EmbeddingsRegistry.register("embed-english-light-v3.0", CohereEmbeddings)

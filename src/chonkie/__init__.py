@@ -1,5 +1,11 @@
 """Main package for Chonkie."""
 
+from .chef import (
+    ABBREVIATIONS,
+    BaseChef,
+    TextChef,
+    UnicodeReplacements,
+)
 from .chunker import (
     BaseChunker,
     LateChunker,
@@ -13,11 +19,11 @@ from .chunker import (
 from .embeddings import (
     AutoEmbeddings,
     BaseEmbeddings,
+    CohereEmbeddings,
     Model2VecEmbeddings,
     OpenAIEmbeddings,
     OllamaEmbeddings,
     SentenceTransformerEmbeddings,
-    CohereEmbeddings,
 )
 from .refinery import (
     BaseRefinery,
@@ -37,9 +43,10 @@ from .types import (
     SentenceChunk,
 )
 
-__version__ = "0.4.1"
+# This hippo grows with every release 🦛✨~
+__version__ = "0.5.0"
 __name__ = "chonkie"
-__author__ = "Chonkie AI"
+__author__ = "🦛 Chonkie AI Team"
 
 # Add basic package metadata to __all__
 __all__ = [
@@ -96,4 +103,12 @@ __all__ += [
 __all__ += [
     "BaseRefinery",
     "OverlapRefinery",
+]
+
+# Add all chef classes to __all__
+__all__ += [
+    "BaseChef",
+    "TextChef",
+    "ABBREVIATIONS",
+    "UnicodeReplacements",
 ]

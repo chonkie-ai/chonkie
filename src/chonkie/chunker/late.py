@@ -13,17 +13,19 @@ from .base import BaseChunker
 if TYPE_CHECKING:
     import numpy as np
 
+
 class LateChunker(BaseChunker):
+
     """Class for Late Chunking.
 
     In late chunking, we first take the embeddings of the entire text,
-    after which we split the text into chunks. When we split the text, 
-    we can use the embeddings generated earlier, mean pool them and 
-    use them as the sentence embeddings for the chunks. 
+    after which we split the text into chunks. When we split the text,
+    we can use the embeddings generated earlier, mean pool them and
+    use them as the sentence embeddings for the chunks.
 
-    This class particularly implements the Sentence-style LateChunking 
-    approach by changing the way we prepare the sentences before the 
-    chunking. 
+    This class particularly implements the Sentence-style LateChunking
+    approach by changing the way we prepare the sentences before the
+    chunking.
 
     Args:
         embedding_model: The embedding model to use for the LateChunker
@@ -34,35 +36,38 @@ class LateChunker(BaseChunker):
         delim: Delimiters to split sentences on
         include_delim: Whether to include the delimiters in the sentences
         **kwargs: Additional keyword arguments to pass to the EmbeddingModel
-        
-    """  
 
-    def __init__(self,
-                 embedding_model: Union[str, BaseEmbeddings] = "all-minilm-l6-v2", 
-                 mode: str = "sentence",
-                 chunk_size: int = 512, 
-                 min_sentences_per_chunk: int = 1, 
-                 min_characters_per_sentence: int = 12,
-                 approximate: bool = True,
-                 delim: Union[str, List[str]] = ['.', '!', '?', '\n'],
-                 include_delim: Union[Literal["prev", "next"], None] = "prev",
-                 **kwargs
-                 ) -> None:
+    """
+
+    def __init__(
+        self,
+        embedding_model: Union[str, BaseEmbeddings] = "all-minilm-l6-v2",
+        mode: str = "sentence",
+        chunk_size: int = 512,
+        min_sentences_per_chunk: int = 1,
+        min_characters_per_sentence: int = 12,
+        approximate: bool = True,
+        delim: Union[str, List[str]] = [".", "!", "?", "\n"],
+        include_delim: Union[Literal["prev", "next"], None] = "prev",
+        **kwargs,
+    ) -> None:
         """Initialise the LateChunker."""
         # Assign the values if they make sense
-        if mode not in ['token', 'sentence']:
-            raise ValueError(
-                "Mode must be one of the following: ['token', 'sentence']"
-            )
-        if chunk_size <= 0: 
+        if mode not in ["token", "sentence"]:
+            raise ValueError("Mode must be one of the following: ['token', 'sentence']")
+        if chunk_size <= 0:
             raise ValueError("chunk_size must be a positive non-zero value!")
-        if min_sentences_per_chunk < 0 and mode == 'sentence':
-            raise ValueError(f"min_sentences_per_chunk was assigned {min_sentences_per_chunk}; but it must be non-negative value!")
+        if min_sentences_per_chunk < 0 and mode == "sentence":
+            raise ValueError(
+                f"min_sentences_per_chunk was assigned {min_sentences_per_chunk}; but it must be non-negative value!"
+            )
         if min_characters_per_sentence <= 0:
-            raise ValueError("min_characters_per_sentence must be a positive non-zero value!")
+            raise ValueError(
+                "min_characters_per_sentence must be a positive non-zero value!"
+            )
         if type(delim) not in [str, list]:
             raise TypeError("delim must be of type str or list of str")
-        
+
         self.mode = mode
         self.chunk_size = chunk_size
         self.min_sentences_per_chunk = min_sentences_per_chunk
@@ -70,49 +75,55 @@ class LateChunker(BaseChunker):
         self.approximate = approximate
         self.delim = delim
         self.include_delim = include_delim
-        self.sep = '🦛'
+        self.sep = "🦛"
 
         # Initialise the embeddings via AutoEmbeddings
-        if isinstance(embedding_model, BaseEmbeddings): 
+        if isinstance(embedding_model, BaseEmbeddings):
             self.embedding_model = embedding_model
         elif isinstance(embedding_model, str):
             from chonkie.embeddings.auto import AutoEmbeddings
-            self.embedding_model = AutoEmbeddings.get_embeddings(embedding_model, **kwargs)
+
+            self.embedding_model = AutoEmbeddings.get_embeddings(
+                embedding_model, **kwargs
+            )
         else:
             raise ValueError(
-                "ooops! seems like your embedding model is of the wrong type " +
-                "currently, this class only supports BaseEmbeddings objects or str objects "+
-                f"and it received {type(embedding_model)} object!"
+                "ooops! seems like your embedding model is of the wrong type "
+                + "currently, this class only supports BaseEmbeddings objects or str objects "
+                + f"and it received {type(embedding_model)} object!"
             )
 
         # Check if the embedding model has been assigned properly
         if self.embedding_model is None:
             raise ImportError(
                 "embedding_model is not a valid embedding model",
-                "Please install the `st` extra to use this feature"
+                "Please install the `st` extra to use this feature",
             )
-        
+
         if type(self.embedding_model) != SentenceTransformerEmbeddings:
-            raise ValueError("LateChunker (currently) only works with SentenceTransformerEmbeddings", 
-                             "Please install the `st` extra to use this feature")
-        
+            raise ValueError(
+                "LateChunker (currently) only works with SentenceTransformerEmbeddings",
+                "Please install the `st` extra to use this feature",
+            )
+
         # Import numpy here as to not import it when it's not needed
-        if importlib.util.find_spec('numpy') is not None:
+        if importlib.util.find_spec("numpy") is not None:
             global np
             import numpy as np
 
-        # Keeping the tokenizer the same as the sentence model is important 
+        # Keeping the tokenizer the same as the sentence model is important
         # for the semantic meaning to be calculated properly
         super().__init__(self.embedding_model.get_tokenizer_or_token_counter())
 
         # Remove the multiprocessing flag from the base class
         self._use_multiprocessing = False
 
-    def _create_token_chunks(self,
-                            chunk_texts: List[str],
-                            token_counts: List[int],
-                            decoded_text: str,
-                            ) -> List[LateChunk]:
+    def _create_token_chunks(
+        self,
+        chunk_texts: List[str],
+        token_counts: List[int],
+        decoded_text: str,
+    ) -> List[LateChunk]:
         """Create chunks from a list of texts."""
         # package everything as Chunk objects and send out the result
         chunks = []
@@ -147,32 +158,29 @@ class LateChunker(BaseChunker):
             return []
 
         # Encode full text
-        text_tokens = self._encode(text)
+        text_tokens = self.tokenizer.encode(text)
 
         # We decode the text because the tokenizer might result in a different output than text
-        decoded_text = self._decode(text_tokens)
+        decoded_text = self.tokenizer.decode(text_tokens)
 
         # Calculate chunk positions
         token_groups = [
             text_tokens[
                 start_index : min(start_index + self.chunk_size, len(text_tokens))
             ]
-            for start_index in range(
-                0, len(text_tokens), self.chunk_size
-            )
+            for start_index in range(0, len(text_tokens), self.chunk_size)
         ]
         token_counts = [
             len(toks) for toks in token_groups
         ]  # get the token counts; it's prolly chunk_size, but len doesn't take too long
 
-        chunk_texts = self._decode_batch(
+        chunk_texts = self.tokenizer.decode_batch(
             token_groups
         )  # decrease the time by decoding in one go (?)
 
         chunks = self._create_token_chunks(chunk_texts, token_counts, decoded_text)
 
         return chunks
-
 
     def _split_sentences(
         self,
@@ -216,7 +224,7 @@ class LateChunker(BaseChunker):
                 current = ""
             else:
                 sentences.append(split)
-            
+
             # At any point if the current sentence is longer than the min_characters_per_sentence,
             # add it to the sentences
             if len(current) >= self.min_characters_per_sentence:
@@ -240,7 +248,7 @@ class LateChunker(BaseChunker):
 
         """
         # Batch encode all sentences at once
-        encoded_sentences = self._encode_batch(sentences)
+        encoded_sentences = self.tokenizer.encode_batch(sentences)
         return [len(encoded) for encoded in encoded_sentences]
 
     def _estimate_token_counts(self, text: str) -> int:
@@ -254,11 +262,12 @@ class LateChunker(BaseChunker):
             raise ValueError(
                 f"Unknown type passed to _estimate_token_count: {type(text)}"
             )
+
     def _get_feedback(self, estimate: int, actual: int) -> float:
         """Validate against the actual token counts and correct the estimates."""
         feedback = 1 - ((estimate - actual) / estimate)
         return feedback
-    
+
     def _prepare_sentences(self, text: str) -> List[Sentence]:
         """Split text into sentences and calculate token counts for each sentence.
 
@@ -279,7 +288,9 @@ class LateChunker(BaseChunker):
         current_pos = 0
         for sent in sentence_texts:
             positions.append(current_pos)
-            current_pos += len(sent)  # No +1 space because sentences are already separated by spaces
+            current_pos += len(
+                sent
+            )  # No +1 space because sentences are already separated by spaces
 
         if not self.approximate:
             # Get accurate token counts in batch
@@ -295,8 +306,10 @@ class LateChunker(BaseChunker):
             )
             for sent, pos, count in zip(sentence_texts, positions, token_counts)
         ]
-    
-    def _create_sentence_chunk(self, sentences: List[Sentence], token_count: int) -> LateChunk:
+
+    def _create_sentence_chunk(
+        self, sentences: List[Sentence], token_count: int
+    ) -> LateChunk:
         """Create a chunk from a list of sentences.
 
         Args:
@@ -369,7 +382,7 @@ class LateChunker(BaseChunker):
             # Get candidate sentences and verify actual token count
             chunk_sentences = sentences[pos:split_idx]
             chunk_text = "".join(s.text for s in chunk_sentences)
-            actual = len(self._encode(chunk_text))
+            actual = self.tokenizer.count_tokens(chunk_text)
 
             # Given the actual token_count and the estimate, get a feedback value for the next loop
             feedback = self._get_feedback(estimate, actual)
@@ -383,7 +396,7 @@ class LateChunker(BaseChunker):
                 split_idx -= 1
                 chunk_sentences = sentences[pos:split_idx]
                 chunk_text = "".join(s.text for s in chunk_sentences)
-                actual = len(self._encode(chunk_text))
+                actual = self.tokenizer.count_tokens(chunk_text)
 
             chunks.append(self._create_sentence_chunk(chunk_sentences, actual))
             pos = split_idx
@@ -392,25 +405,29 @@ class LateChunker(BaseChunker):
 
     def _get_chunks(self, text: str) -> List[LateChunk]:
         """Get chunks from the text."""
-        if self.mode == 'token':
+        if self.mode == "token":
             return self._token_chunk(text)
-        elif self.mode == 'sentence':
+        elif self.mode == "sentence":
             return self._sentence_chunk(text)
         else:
             raise ValueError(f"Unknown mode: {self.mode}")
-    
-    def _embedding_split(self, token_embeddings: "np.ndarray", token_counts: List[int]) -> List["np.ndarray"]:
+
+    def _embedding_split(
+        self, token_embeddings: "np.ndarray", token_counts: List[int]
+    ) -> List["np.ndarray"]:
         """Split the embedding into chunks."""
         embedding_splits = []
         current_index = 0
         for i, token_count in enumerate(token_counts):
             if i != len(token_counts) - 1:
-                embedding_splits.append(token_embeddings[current_index:current_index+token_count])
+                embedding_splits.append(
+                    token_embeddings[current_index : current_index + token_count]
+                )
                 current_index += token_count
             else:
                 embedding_splits.append(token_embeddings[current_index:])
         return embedding_splits
-        
+
     def _mean_pool(self, embeddings: "np.ndarray") -> "np.ndarray":
         """Mean pool the embeddings."""
         # Assuming that numpy is installed and imported as np
@@ -429,16 +446,31 @@ class LateChunker(BaseChunker):
         # Additionally, token counts are not exactly the same as the token counts of the text
         # because the tokenizer encodes the text differently if the text is split into chunks
 
-
         # Get the token embeddings for the entire text
-        token_embeddings = self.embedding_model.embed_as_tokens(text)  # Shape: (n_tokens, embedding_dim)
-        chunk_token_embeddings = self._embedding_split(token_embeddings, token_counts)  # Shape: (n_chunks, n_tokens, embedding_dim)
+        token_embeddings = self.embedding_model.embed_as_tokens(
+            text
+        )  # Shape: (n_tokens, embedding_dim)
+        chunk_token_embeddings = self._embedding_split(
+            token_embeddings, token_counts
+        )  # Shape: (n_chunks, n_tokens, embedding_dim)
 
         # Get the chunk embeddings by averaging the token embeddings
-        chunk_embeddings = [self._mean_pool(token_emb) for token_emb in chunk_token_embeddings] # Shape: (n_chunks, embedding_dim)
+        chunk_embeddings = [
+            self._mean_pool(token_emb) for token_emb in chunk_token_embeddings
+        ]  # Shape: (n_chunks, embedding_dim)
 
         # Add the chunk embeddings to the chunks
         for chunk, embedding in zip(chunks, chunk_embeddings):
             chunk.embedding = embedding
 
         return chunks
+
+    def __repr__(self) -> str:
+        """Return a string representation of the LateChunker."""
+        return (
+            f"LateChunker(model={self.embedding_model}, mode={self.mode}, "
+            f"chunk_size={self.chunk_size}, min_sentences_per_chunk={self.min_sentences_per_chunk}, "
+            f"min_characters_per_sentence={self.min_characters_per_sentence}, "
+            f"approximate={self.approximate}, delim={self.delim}, "
+            f"include_delim={self.include_delim})"
+        )

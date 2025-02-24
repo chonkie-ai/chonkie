@@ -1,6 +1,14 @@
-__pycache__/
-chonkie.egg-info/
 .DS_Store
 
 build/*
 notebooks/*
+*.pyc
+src/chonkie.egg-info/*
+src/chonkie/__pycache__/*
+chonkie.egg-info/dependency_links.txt
+chonkie.egg-info/PKG-INFO
+chonkie.egg-info/requires.txt
+chonkie.egg-info/SOURCES.txt
+chonkie.egg-info/top_level.txt
+/tmp/*
+/tests/data/*

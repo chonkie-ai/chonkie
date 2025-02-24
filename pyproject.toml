@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chonkie"
-version = "0.4.1"
+version = "0.5.0"
 description = "🦛 CHONK your texts with Chonkie ✨ - The no-nonsense RAG chunking library"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -46,14 +46,23 @@ openai = ["tiktoken>=0.5.0", "openai>=1.0.0", "numpy>=1.23.0, <2.2"]
 ollama = ["ollama>=0.4.0", "numpy>=1.23.0, <2.2", "requests>=2.32.0"]
 semantic = ["model2vec>=0.3.0", "numpy>=1.23.0, <2.2"]
 cohere = ["cohere>=5.13.0", "numpy>=1.23.0, <2.2"]
-all = ["sentence-transformers>=3.0.0", "numpy>=1.23.0, <2.2", "openai>=1.0.0", "model2vec>=0.3.0", "cohere>=5.13.0", "ollama>=0.4.0", "requests>=2.32.0"]
+all = [
+    "sentence-transformers>=3.0.0", 
+    "numpy>=1.23.0, <2.2", 
+    "openai>=1.0.0", 
+    "model2vec>=0.3.0", 
+    "cohere>=5.13.0", 
+    "ollama>=0.4.0", 
+    "requests>=2.32.0"
+]
 dev = [
     "tiktoken>=0.5.0",
-    "pytest>=6.2.0", 
-    "pytest-cov>=4.0.0",
     "datasets>=1.14.0",
     "transformers>=4.0.0",
-    "ruff>=0.0.265"
+    "pytest>=6.2.0", 
+    "pytest-cov>=4.0.0",
+    "ruff>=0.0.265",
+    "mypy>=1.11.0"
 ]
 
 [tool.pytest.ini_options]
@@ -64,7 +73,21 @@ package-dir = {"" = "src"}
 packages = ["chonkie", 
             "chonkie.chunker",
             "chonkie.embeddings", 
-            "chonkie.refinery"]
+            "chonkie.refinery",
+            "chonkie.chef"]
 
 [tool.ruff]
-select = ["F", "I", "D", "DOC"]
+exclude = ["*.ipynb"]
+lint.select = ["F", "I", "D", "DOC"]
+lint.ignore = ["D211", "D213"]
+
+[tool.ruff.format]
+preview = true
+indent-style = "space"
+
+[tool.mypy]
+disallow_untyped_defs = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+show_error_codes = true

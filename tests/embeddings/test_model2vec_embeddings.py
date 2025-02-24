@@ -1,4 +1,5 @@
 """Test the Model2VecEmbeddings class."""
+
 import numpy as np
 import pytest
 from model2vec import StaticModel
@@ -65,14 +66,22 @@ def test_similarity(embedding_model, sample_texts):
     """Test that the similarity method returns a float between 0 and 1."""
     embeddings = embedding_model.embed_batch(sample_texts)
     similarity_score = embedding_model.similarity(embeddings[0], embeddings[1])
-    assert isinstance(similarity_score, np.float32), f"Similarity score is not a float: {type(similarity_score)}"
-    assert 0.0 <= similarity_score <= 1.0, f"Similarity score is not between 0 and 1: {similarity_score}"
+    assert isinstance(similarity_score, np.float32), (
+        f"Similarity score is not a float: {type(similarity_score)}"
+    )
+    assert 0.0 <= similarity_score <= 1.0, (
+        f"Similarity score is not between 0 and 1: {similarity_score}"
+    )
 
 
 def test_dimension_property(embedding_model):
     """Test that the dimension property returns an integer greater than 0."""
-    assert isinstance(embedding_model.dimension, int), f"Dimension is not an integer: {type(embedding_model.dimension)}"
-    assert embedding_model.dimension > 0, f"Dimension is not greater than 0: {embedding_model.dimension}"
+    assert isinstance(embedding_model.dimension, int), (
+        f"Dimension is not an integer: {type(embedding_model.dimension)}"
+    )
+    assert embedding_model.dimension > 0, (
+        f"Dimension is not greater than 0: {embedding_model.dimension}"
+    )
 
 
 def test_is_available():
@@ -84,7 +93,9 @@ def test_repr(embedding_model):
     """Test that the repr method returns a string starting with 'Model2VecEmbeddings'."""
     repr_str = repr(embedding_model)
     assert isinstance(repr_str, str), f"repr_str is not a string: {type(repr_str)}"
-    assert repr_str.startswith("Model2VecEmbeddings"), f"repr_str does not start with 'Model2VecEmbeddings': {repr_str}"
+    assert repr_str.startswith("Model2VecEmbeddings"), (
+        f"repr_str does not start with 'Model2VecEmbeddings': {repr_str}"
+    )
 
 
 if __name__ == "__main__":

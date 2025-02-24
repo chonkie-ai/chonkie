@@ -1,4 +1,5 @@
 """Test cases for the SentenceChunker."""
+
 from typing import List
 
 import pytest
@@ -44,18 +45,26 @@ def sample_complex_markdown_text():
 
 def test_sentence_chunker_initialization(tokenizer):
     """Test that the SentenceChunker can be initialized with a tokenizer."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128
+    )
 
     assert chunker is not None
-    assert chunker.tokenizer == tokenizer
+    assert chunker.tokenizer.tokenizer == tokenizer
     assert chunker.chunk_size == 512
     assert chunker.chunk_overlap == 128
     assert chunker.min_sentences_per_chunk == 1
+    assert chunker.approximate == True
+    assert chunker.delim == [".", "!", "?", "\n"]
+    assert chunker.include_delim == "prev"
+    assert chunker.return_type == "chunks"
 
 
 def test_sentence_chunker_chunking(tokenizer, sample_text):
     """Test that the SentenceChunker can chunk a sample text into sentences."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128
+    )
     chunks = chunker.chunk(sample_text)
 
     assert len(chunks) > 0
@@ -69,7 +78,9 @@ def test_sentence_chunker_chunking(tokenizer, sample_text):
 
 def test_sentence_chunker_empty_text(tokenizer):
     """Test that the SentenceChunker can handle empty text input."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128
+    )
     chunks = chunker.chunk("")
 
     assert len(chunks) == 0
@@ -77,7 +88,9 @@ def test_sentence_chunker_empty_text(tokenizer):
 
 def test_sentence_chunker_single_sentence(tokenizer):
     """Test that the SentenceChunker can handle text with a single sentence."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128
+    )
     chunks = chunker.chunk("This is a single sentence.")
 
     assert len(chunks) == 1
@@ -86,7 +99,9 @@ def test_sentence_chunker_single_sentence(tokenizer):
 
 def test_sentence_chunker_single_chunk_text(tokenizer):
     """Test that the SentenceChunker can handle text that fits within a single chunk."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128
+    )
     chunks = chunker.chunk("Hello, how are you? I am doing well.")
 
     assert len(chunks) == 1
@@ -95,17 +110,28 @@ def test_sentence_chunker_single_chunk_text(tokenizer):
 
 def test_sentence_chunker_repr(tokenizer):
     """Test that the SentenceChunker has a string representation."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128
+    )
 
-    assert (
-        repr(chunker)
-        == "SentenceChunker(chunk_size=512, chunk_overlap=128, min_sentences_per_chunk=1)"
+    assert repr(chunker) == (
+        f"SentenceChunker(tokenizer={chunker.tokenizer}, "
+        f"chunk_size={chunker.chunk_size}, "
+        f"chunk_overlap={chunker.chunk_overlap}, "
+        f"min_sentences_per_chunk={chunker.min_sentences_per_chunk}, "
+        f"min_characters_per_sentence={chunker.min_characters_per_sentence}, "
+        f"approximate={chunker.approximate}, "
+        f"delim={chunker.delim}, "
+        f"include_delim={chunker.include_delim}, "
+        f"return_type={chunker.return_type})"
     )
 
 
 def test_sentence_chunker_overlap(tokenizer, sample_text):
     """Test that the SentenceChunker creates overlapping chunks correctly."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128
+    )
     chunks = chunker.chunk(sample_text)
 
     for i in range(1, len(chunks)):
@@ -147,53 +173,86 @@ def verify_chunk_indices(chunks: List[Chunk], original_text: str):
             f"Indices: [{chunk.start_index}:{chunk.end_index}]"
         )
 
+
 def test_sentence_chunker_indices(tokenizer, sample_text):
     """Test that the SentenceChunker correctly maps chunk indices to the original text."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128
+    )
     chunks = chunker.chunk(sample_text)
     verify_chunk_indices(chunks, sample_text)
 
 
 def test_sentence_chunker_indices_complex_md(tokenizer, sample_complex_markdown_text):
     """Test that the SentenceChunker correctly maps chunk indices to the original text."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128
+    )
     chunks = chunker.chunk(sample_complex_markdown_text)
     verify_chunk_indices(chunks, sample_complex_markdown_text)
 
+
 def test_sentence_chunker_token_counts(tokenizer, sample_text):
     """Test that the SentenceChunker correctly calculates token counts."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128
+    )
     chunks = chunker.chunk(sample_text)
-    assert all([chunk.token_count > 0 for chunk in chunks]), "All chunks must have a positive token count"
-    assert all([chunk.token_count <= 512 for chunk in chunks]), "All chunks must have a token count less than or equal to 512"
+    assert all([chunk.token_count > 0 for chunk in chunks]), (
+        "All chunks must have a positive token count"
+    )
+    assert all([chunk.token_count <= 512 for chunk in chunks]), (
+        "All chunks must have a token count less than or equal to 512"
+    )
 
     token_counts = [len(tokenizer.encode(chunk.text)) for chunk in chunks]
-    assert all([chunk.token_count == token_count for chunk, token_count in zip(chunks, token_counts)]), "All chunks must have a token count equal to the length of the encoded text"
+    assert all([
+        chunk.token_count == token_count
+        for chunk, token_count in zip(chunks, token_counts)
+    ]), "All chunks must have a token count equal to the length of the encoded text"
+
 
 def test_sentence_chunker_return_type(tokenizer, sample_text):
     """Test that SentenceChunker's return type is correctly set."""
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128, return_type="texts")
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer,
+        chunk_size=512,
+        chunk_overlap=128,
+        return_type="texts",
+    )
     chunks = chunker.chunk(sample_text)
     assert all([type(chunk) is str for chunk in chunks])
     assert all([len(tokenizer.encode(chunk)) <= 512 for chunk in chunks])
+
 
 def test_sentence_chunker_min_sentences_per_chunk(tokenizer, sample_text):
     """Test that SentenceChunker respects minimum sentences per chunk."""
     # Test that the minimum sentences per chunk is respected, giving a warning otherwise!
     sample_text = "This is a test."
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, chunk_overlap=128, min_sentences_per_chunk=2)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer,
+        chunk_size=512,
+        chunk_overlap=128,
+        min_sentences_per_chunk=2,
+    )
     chunks = chunker.chunk(sample_text)
     assert len(chunks) == 1
     assert chunks[0].text == "This is a test."
     assert chunks[0].token_count == len(tokenizer.encode(sample_text))
 
+
 def test_sentence_chunker_min_characters_per_sentence(tokenizer):
-    """Test that SentenceChunker respects minimum characters per sentence and when less than min_characters_per_sentence, it is merged with the next sentence"""
+    """Test that SentenceChunker respects minimum characters per sentence and when less than min_characters_per_sentence, it is merged with the next sentence."""
     sample_text = "Hello!"
-    chunker = SentenceChunker(tokenizer_or_token_counter=tokenizer, chunk_size=512, min_characters_per_sentence=20)
+    chunker = SentenceChunker(
+        tokenizer_or_token_counter=tokenizer,
+        chunk_size=512,
+        min_characters_per_sentence=20,
+    )
     chunks = chunker.chunk(sample_text)
     assert len(chunks) == 1
     assert chunks[0].text == "Hello!"
+
 
 if __name__ == "__main__":
     pytest.main()

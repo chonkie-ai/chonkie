@@ -1,3 +1,5 @@
+"""Refinery classes for text refinement."""
+
 from .base import BaseRefinery
 from .overlap import OverlapRefinery
 
