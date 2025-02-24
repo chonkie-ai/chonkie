@@ -22,6 +22,7 @@ from .embeddings import (
     CohereEmbeddings,
     Model2VecEmbeddings,
     OpenAIEmbeddings,
+    OllamaEmbeddings,
     SentenceTransformerEmbeddings,
 )
 from .refinery import (
@@ -94,6 +95,7 @@ __all__ += [
     "SentenceTransformerEmbeddings",
     "OpenAIEmbeddings",
     "CohereEmbeddings",
+    "OllamaEmbeddings",
     "AutoEmbeddings",
 ]
 
